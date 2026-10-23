@@ -1,0 +1,55 @@
+@startuml TOP_ARCHITECTURE
+!pragma layout smetana
+
+package "Android Application Layer" {
+    [UI Components (Jetpack Compose)] as UI
+    [ViewModel / State Handler] as VM
+    [Preset & Settings Store] as Store
+    [BLE Client Controller] as BLE_Client
+
+    UI --> VM : User Actions / State Observing
+    VM --> Store : Read/Write Presets
+    VM --> BLE_Client : Trigger Commands / Observe Connection
+}
+
+cloud "Bluetooth Low Energy (BLE 5.3) GATT Channel" {
+    interface "Lighting Control Char\n[UUID: ...-1001]" as LightingGATT
+    interface "Audio Control Char\n[UUID: ...-1002]" as AudioGATT
+    interface "Status Telemetry Char\n[UUID: ...-1003]" as StatusGATT
+}
+
+BLE_Client --> LightingGATT : Write Lighting Commands
+BLE_Client --> AudioGATT : Write Audio Commands
+BLE_Client <-- StatusGATT : Read / Notifications
+
+package "ESP32-C6 Microcontroller Subsystem" {
+    package "Firmware Core (ESP-IDF / FreeRTOS)" {
+        [BLE Server Engine (NimBLE)] as BLE_Server
+        [Command Parser & Dispatcher] as Dispatcher
+        [Main System State Machine] as StateMachine
+        [Neopixel Engine (RMT Driver)] as LED_Engine
+        [Audio Engine (LEDC PWM Driver)] as Audio_Engine
+        [NVS Storage Manager] as NVS
+
+        BLE_Server <--> LightingGATT
+        BLE_Server <--> AudioGATT
+        BLE_Server <--> StatusGATT
+
+        BLE_Server --> Dispatcher : Raw Byte Frames
+        Dispatcher --> StateMachine : Parsed Command Events
+        StateMachine --> LED_Engine : Queue Lighting Pattern Commands
+        StateMachine --> Audio_Engine : Queue Melody / Tone Commands
+        StateMachine <--> NVS : Save/Load Default Config
+        StateMachine --> BLE_Server : Push Status Telemetry Updates
+    }
+
+    node "Hardware Peripherals" {
+        component "WS2812B / SK6812 LED Strip\n[GPIO 8]" as LEDs
+        component "Loudspeaker / Passive Buzzer\n[GPIO 19]" as Speaker
+    }
+
+    LED_Engine --> LEDs : Pulse Code Data (RMT)
+    Audio_Engine --> Speaker : PWM Frequency Tones (LEDC)
+}
+
+@enduml
