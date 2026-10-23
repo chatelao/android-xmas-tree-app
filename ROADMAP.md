@@ -4,7 +4,7 @@
 
 | Phase | Description | Status |
 | :--- | :--- | :---: |
-| **Phase 1** | Repository Infrastructure & Toolchain Setup | ⏳ |
+| **Phase 1** | Repository Infrastructure & Toolchain Setup | 🚧 |
 | **Phase 2** | Technical Interfaces & Binary Protocol Specifications | ⏳ |
 | **Phase 3** | Core Architecture Stubs & Interface Definitions | ⏳ |
 | **Phase 4** | Subsystem Implementations (Android App & ESP32-C6 Firmware) | ⏳ |
@@ -30,12 +30,12 @@
 
 Focus on establishing the environment, build scripts, and foundation files needed for full development.
 
-* [ ] **Task 1.1: Build & Environment Preparation** ⏳
-  * [ ] Create `src/install.sh` for preparing application development and build tools.
-  * [ ] Create `test/install.sh` for installing test runners, Playwright, and validation tools.
-* [ ] **Task 1.2: CI/CD Pipeline Skeleton** ⏳
-  * [ ] Set up initial GitHub Actions workflow configuration.
-  * [ ] Configure dependency caching for Gradle and ESP-IDF builds.
+* [ ] **Task 1.1: Build & Environment Preparation** ✅
+  * [x] Create `src/install.sh` for preparing application development and build tools.
+  * [x] Create `test/install.sh` for installing test runners, Playwright, and validation tools.
+* [ ] **Task 1.2: CI/CD Pipeline Skeleton** ✅
+  * [x] Set up initial GitHub Actions workflow configuration.
+  * [x] Configure dependency caching for Gradle and ESP-IDF builds.
 
 ---
 
