@@ -6,7 +6,7 @@
 | :--- | :--- | :---: |
 | **Phase 1** | Repository Infrastructure & Toolchain Setup | ✅ |
 | **Phase 2** | Technical Interfaces & Binary Protocol Specifications | ✅ |
-| **Phase 3** | Core Architecture Stubs & Interface Definitions | ⏳ |
+| **Phase 3** | Core Architecture Stubs & Interface Definitions | ✅ |
 | **Phase 4** | Subsystem Implementations (Android App & ESP32-C6 Firmware) | ⏳ |
 | **Phase 5** | Integration, Preset Management & System Telemetry | ⏳ |
 | **Phase 6** | System Verification, Automated Testing & CI/CD Pipeline | ⏳ |
@@ -57,16 +57,16 @@ Interface-first approach: Define shared byte frames, data models, and GATT speci
 
 Create modular stubs for both Android and ESP32-C6 to enable parallel development.
 
-* [ ] **Task 3.1: Android Architectural Stubs** ⏳
-  * [ ] Implement `BleManager` interface for GATT scanning, connection management, and frame serialization.
-  * [ ] Implement `MainViewModel` UI state contracts (`StateFlow`) and UI interaction interfaces.
-  * [ ] Implement `PresetRepository` interface contracts for saving/loading user configurations.
-* [ ] **Task 3.2: ESP32-C6 Firmware Architecture Stubs** ⏳
-  * [ ] Define FreeRTOS task handles and synchronization queues (`xLedQueue`, `xAudioQueue`).
-  * [ ] Define `nimble_host_task` GATT server write/read callback interfaces.
-  * [ ] Define `led_engine_task` interface for receiving animation frames.
-  * [ ] Define `audio_engine_task` interface for parsing tone/melody commands.
-  * [ ] Define `nvs_manager` interface for key-value flash storage.
+* [x] **Task 3.1: Android Architectural Stubs** ✅
+  * [x] Implement `BleManager` interface for GATT scanning, connection management, and frame serialization.
+  * [x] Implement `MainViewModel` UI state contracts (`StateFlow`) and UI interaction interfaces.
+  * [x] Implement `PresetRepository` interface contracts for saving/loading user configurations.
+* [x] **Task 3.2: ESP32-C6 Firmware Architecture Stubs** ✅
+  * [x] Define FreeRTOS task handles and synchronization queues (`xLedQueue`, `xAudioQueue`).
+  * [x] Define `nimble_host_task` GATT server write/read callback interfaces.
+  * [x] Define `led_engine_task` interface for receiving animation frames.
+  * [x] Define `audio_engine_task` interface for parsing tone/melody commands.
+  * [x] Define `nvs_manager` interface for key-value flash storage.
 
 ---
 
