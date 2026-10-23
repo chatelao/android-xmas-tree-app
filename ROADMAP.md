@@ -4,8 +4,8 @@
 
 | Phase | Description | Status |
 | :--- | :--- | :---: |
-| **Phase 1** | Repository Infrastructure & Toolchain Setup | 🚧 |
-| **Phase 2** | Technical Interfaces & Binary Protocol Specifications | ⏳ |
+| **Phase 1** | Repository Infrastructure & Toolchain Setup | ✅ |
+| **Phase 2** | Technical Interfaces & Binary Protocol Specifications | ✅ |
 | **Phase 3** | Core Architecture Stubs & Interface Definitions | ⏳ |
 | **Phase 4** | Subsystem Implementations (Android App & ESP32-C6 Firmware) | ⏳ |
 | **Phase 5** | Integration, Preset Management & System Telemetry | ⏳ |
@@ -30,10 +30,10 @@
 
 Focus on establishing the environment, build scripts, and foundation files needed for full development.
 
-* [ ] **Task 1.1: Build & Environment Preparation** ✅
+* [x] **Task 1.1: Build & Environment Preparation** ✅
   * [x] Create `src/install.sh` for preparing application development and build tools.
   * [x] Create `test/install.sh` for installing test runners, Playwright, and validation tools.
-* [ ] **Task 1.2: CI/CD Pipeline Skeleton** ✅
+* [x] **Task 1.2: CI/CD Pipeline Skeleton** ✅
   * [x] Set up initial GitHub Actions workflow configuration.
   * [x] Configure dependency caching for Gradle and ESP-IDF builds.
 
@@ -43,13 +43,13 @@ Focus on establishing the environment, build scripts, and foundation files neede
 
 Interface-first approach: Define shared byte frames, data models, and GATT specifications before functional implementations.
 
-* [ ] **Task 2.1: BLE GATT Profile Definition** ⏳
-  * [ ] Define Custom Service UUID (`12345678-1234-5678-1234-56789abcdef0`).
-  * [ ] Specify Lighting Control Characteristic (`...abcdef1`), Audio Control Characteristic (`...abcdef2`), and Telemetry Characteristic (`...abcdef3`).
-* [ ] **Task 2.2: Binary Protocol Specification Stubs** ⏳
-  * [ ] Define Lighting Control byte frame parser interface (8 bytes: Command, Pattern ID, RGB, Brightness, Speed, Reserved).
-  * [ ] Define Audio Control byte frame parser interface (6 bytes: Command, Melody ID, State, Volume, Tempo, Reserved).
-  * [ ] Define System Status / Telemetry payload structure (10 bytes: Uptime, Active Pattern, Active Melody, Brightness, Volume, Connection State, Error Code).
+* [x] **Task 2.1: BLE GATT Profile Definition** ✅
+  * [x] Define Custom Service UUID (`12345678-1234-5678-1234-56789abcdef0`).
+  * [x] Specify Lighting Control Characteristic (`...abcdef1`), Audio Control Characteristic (`...abcdef2`), and Telemetry Characteristic (`...abcdef3`).
+* [x] **Task 2.2: Binary Protocol Specification Stubs** ✅
+  * [x] Define Lighting Control byte frame parser interface (8 bytes: Command, Pattern ID, RGB, Brightness, Speed, Reserved).
+  * [x] Define Audio Control byte frame parser interface (6 bytes: Command, Melody ID, State, Volume, Tempo, Reserved).
+  * [x] Define System Status / Telemetry payload structure (10 bytes: Uptime, Active Pattern, Active Melody, Brightness, Volume, Connection State, Error Code).
 
 ---
 
