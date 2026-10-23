@@ -1,0 +1,14 @@
+# Build & test binaries
+test/bin/
+test/test_firmware_protocol
+*.class
+*.o
+*.so
+*.exe
+*.out
+
+# IDE & OS files
+.DS_Store
+.idea/
+.gradle/
+build/
