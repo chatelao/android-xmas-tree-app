@@ -1,5 +1,8 @@
 # Build & test binaries
 test/bin/
+bin/
+test_arch
+test_protocol
 test/test_firmware_protocol
 *.class
 *.o

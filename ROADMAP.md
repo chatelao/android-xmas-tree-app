@@ -76,15 +76,18 @@ Create modular stubs for both Android and ESP32-C6 to enable parallel developmen
 Parallel implementation of client and firmware functionality against established interfaces.
 
 * [ ] **Task 4.1: Android Application Implementation** ⏳
-  * [ ] Implement Jetpack Compose UI (Device Scan Screen, Remote Control Dashboard with interactive Color & Sound Pickers, Preset Manager Screen) packaged into an installable APK.
+  * [x] Implement binary frame encoder for lighting and audio control commands. ✅
+  * [ ] Implement Jetpack Compose UI:
+    * [ ] Device Scan Screen & Bluetooth status indicator.
+    * [ ] Remote Control Dashboard UI with interactive Color Wheel & Melody Picker.
+    * [ ] Preset Manager Screen for saving and recalling themes.
   * [ ] Implement `android.bluetooth` connection handling with Kotlin Coroutines and `callbackFlow`.
-  * [ ] Implement binary frame encoder for lighting and audio control commands.
 * [ ] **Task 4.2: ESP32-C6 Neopixel Lighting Engine** ⏳
-  * [ ] Implement RMT peripheral driver for WS2812B/SK6812 timing on GPIO 8.
+  * [ ] Implement RMT peripheral driver setup & WS2812B pulse timing descriptor helper on GPIO 8.
   * [ ] Implement pattern rendering algorithms (Static Color, Rainbow Wave, Sparkle, Festive Candle, Twinkle).
 * [ ] **Task 4.3: ESP32-C6 Audio / Melody Engine** ⏳
-  * [ ] Implement LEDC PWM peripheral driver on GPIO 19.
-  * [ ] Implement RTTTL melody score parser and playback controller (Jingle Bells, We Wish You a Merry Christmas, Silent Night, Deck the Halls).
+  * [x] Implement RTTTL festive melody score definitions and note frequency converter (Jingle Bells, We Wish You a Merry Christmas, Silent Night, Deck the Halls). ✅
+  * [ ] Implement LEDC PWM peripheral driver on GPIO 19 and tone playback task controller.
 
 ---
 
@@ -93,7 +96,7 @@ Parallel implementation of client and firmware functionality against established
 Connect client and firmware subsystems, enabling end-to-end user features.
 
 * [ ] **Task 5.1: Device State Synchronization & Telemetry** ⏳
-  * [ ] Connect ESP32-C6 `cmd_dispatcher_task` to dispatch incoming BLE byte payloads to queue handlers.
+  * [x] Connect ESP32-C6 `cmd_dispatcher_task` to parse incoming BLE byte payloads and dispatch to callbacks. ✅
   * [ ] Enable periodic telemetry notifications over BLE GATT Telemetry Characteristic.
   * [ ] Update Android `MainViewModel` to reactively reflect current tree status.
 * [ ] **Task 5.2: Preset Management Implementation** ⏳
@@ -107,8 +110,8 @@ Connect client and firmware subsystems, enabling end-to-end user features.
 Ensure system quality, reliability, and automated validation.
 
 * [ ] **Task 6.1: Automated Unit Testing** ⏳
-  * [ ] Write Android unit tests using JUnit 5 and MockK for `BleManager` frame packing/unpacking and ViewModel transitions.
-  * [ ] Write ESP32-C6 firmware unit tests using Espressif Unity for binary packet parsing and RTTTL score conversion.
+  * [ ] Write Android protocol & architecture unit tests using JUnit 5 and MockK for frame packing/unpacking and ViewModel transitions.
+  * [x] Write ESP32-C6 firmware unit tests for binary packet parsing, BLE command dispatching, and RTTTL score conversion. ✅
 * [ ] **Task 6.2: Frontend UI & Workflow Verification** ⏳
   * [ ] Implement Playwright tests for capturing Compose UI screens and end-to-end workflows.
 * [ ] **Task 6.3: CI/CD Finalization** ⏳
