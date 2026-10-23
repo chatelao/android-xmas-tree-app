@@ -1,9 +1,9 @@
 # Conceptual Concept: Smart Neopixel Xmas Tree Remote Control System
 
 ## 1. Goal & Executive Summary
-The primary goal of this project is to build an intuitive Android Application and corresponding Bluetooth firmware for the ESP32-C6 microcontroller to remotely control a smart Neopixel Xmas Tree featuring an integrated loudspeaker/buzzer.
+The primary goal of this project is to build an installable Android Application (featuring an intuitive color & sound picker interface) and corresponding installable Bluetooth firmware binary for the ESP32-C6 microcontroller to remotely control a smart Neopixel Xmas Tree featuring an integrated loudspeaker/buzzer.
 
-The system allows users to wirelessly configure and trigger dynamic lighting patterns on an addressable Neopixel LED strip or tree layout while playing festive melodies and sound effects in real-time or synchronized sequences.
+The end results of this project are two concrete build deliverables: an installable Android Application package (APK) featuring an interactive color picker and sound/melody picker, and an installable/flashable ESP32-C6 firmware binary package. The system allows users to wirelessly configure and trigger dynamic lighting patterns on an addressable Neopixel LED strip or tree layout while playing festive melodies and sound effects in real-time or synchronized sequences.
 
 ---
 
@@ -102,7 +102,7 @@ The system allows users to wirelessly configure and trigger dynamic lighting pat
 ```
 
 ### Functional Components
-1. **Android Application UI:** Offers user controls for color selection, animation pattern toggling, volume adjustment, and melody selection.
+1. **Android Application UI:** An installable application providing interactive controls, including a color picker wheel/swatch for LED customization and a sound/melody picker for tune selection, animation pattern toggling, volume adjustment, and preset management.
 2. **BLE Communication Layer:** Manages Bluetooth discovery, GATT service discovery, characteristic reads/writes/notifications.
 3. **ESP32-C6 Firmware Core:** Orchestrates input command parsing, state management, timer events, and peripheral drivers.
 4. **Neopixel Lighting Subsystem:** Drives the WS2812B / SK6812 addressable LED strip using hardware timing peripherals (RMT / SPI / PWM).

@@ -4,7 +4,9 @@
 
 This document provides the detailed technological design for the Smart Neopixel Xmas Tree Remote Control System, deriving implementation choices from `CONCEPT.md` and the top-level project goal.
 
-The system comprises a modern Android application acting as a Bluetooth Low Energy (BLE) client and an ESP32-C6 microcontroller firmware core driving an addressable WS2812B/SK6812 Neopixel LED strip and a PWM-driven loudspeaker/buzzer.
+The end results of this system design are two installable artifacts:
+1. **Installable Android Application (.apk):** A mobile app featuring a color picker (for Neopixel RGB lighting customization) and a sound/melody picker (for festive audio playback selection).
+2. **Installable Firmware Binary (.bin):** Flashed to the ESP32-C6 microcontroller driving an addressable WS2812B/SK6812 Neopixel LED strip and a PWM-driven loudspeaker/buzzer over Bluetooth Low Energy (BLE).
 
 ### Top-Level Architecture Diagram
 Below is the system module layout and communications architecture.
@@ -175,7 +177,9 @@ Below is the system module layout and communications architecture.
 ## 5. Component Architecture
 
 ### 5.1 Android Software Components (MVVM)
-* **`MainActivity` / Compose Navigation:** Application lifecycle host and screen composition (Device Scan Screen, Remote Control Dashboard, Preset Manager Screen).
+* **`MainActivity` / Compose Navigation:** Application lifecycle host and screen composition for the installable APK (Device Scan Screen, Remote Control Dashboard with Color & Sound Pickers, Preset Manager Screen).
+* **Color Picker UI Component:** Interactive Compose color wheel / swatch picker for real-time RGB LED color selection.
+* **Sound / Melody Picker UI Component:** Interactive selector for choosing festive RTTTL melodies and audio feedback.
 * **`MainViewModel`:** Maintains UI state (`StateFlow`), handles user interaction events, triggers BLE command dispatches.
 * **`BleManager` Repository:** Encapsulates BLE connection lifecycle, GATT scanning, auto-reconnect, and binary packet building (`buildLightingPacket()`, `buildAudioPacket()`).
 * **`PresetRepository`:** Jetpack DataStore store for saving/loading user audio-visual presets.

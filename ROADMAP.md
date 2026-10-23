@@ -19,7 +19,8 @@
 * ⏳ **Dynamic Lighting Engine:** Drive WS2812B/SK6812 Neopixel LED strip using ESP32-C6 hardware RMT peripheral supporting custom patterns, brightness, and speed adjustments.
 * ⏳ **Audio Melody Playback:** Drive a speaker/buzzer via LEDC PWM peripheral to parse and play RTTTL festive melodies.
 * ⏳ **Preset & Automation Management:** Provide user-defined preset saving and instant recall across Android Jetpack DataStore and ESP32-C6 NVS storage.
-* ⏳ **Modern Android User Interface:** Deliver an intuitive Jetpack Compose UI following Material 3 guidelines for real-time control and monitoring.
+* ⏳ **Modern Android User Interface:** Deliver an installable Android Application (APK) with an intuitive Jetpack Compose UI featuring a color picker and sound/melody picker following Material 3 guidelines.
+* ⏳ **Installable Firmware Package:** Build an installable/flashable ESP32-C6 firmware binary for embedded deployment.
 * ⏳ **Automated Quality Assurance:** Implement robust CI/CD workflows, automated unit tests, and Playwright UI test verification.
 
 ---
@@ -75,7 +76,7 @@ Create modular stubs for both Android and ESP32-C6 to enable parallel developmen
 Parallel implementation of client and firmware functionality against established interfaces.
 
 * [ ] **Task 4.1: Android Application Implementation** ⏳
-  * [ ] Implement Jetpack Compose UI (Device Scan Screen, Remote Control Dashboard, Preset Manager Screen).
+  * [ ] Implement Jetpack Compose UI (Device Scan Screen, Remote Control Dashboard with interactive Color & Sound Pickers, Preset Manager Screen) packaged into an installable APK.
   * [ ] Implement `android.bluetooth` connection handling with Kotlin Coroutines and `callbackFlow`.
   * [ ] Implement binary frame encoder for lighting and audio control commands.
 * [ ] **Task 4.2: ESP32-C6 Neopixel Lighting Engine** ⏳
@@ -111,4 +112,4 @@ Ensure system quality, reliability, and automated validation.
 * [ ] **Task 6.2: Frontend UI & Workflow Verification** ⏳
   * [ ] Implement Playwright tests for capturing Compose UI screens and end-to-end workflows.
 * [ ] **Task 6.3: CI/CD Finalization** ⏳
-  * [ ] Finalize GitHub Actions workflow to run unit tests, build Android APK, compile firmware binary, and capture UI test screenshots.
+  * [ ] Finalize GitHub Actions workflow to run unit tests, build installable Android APK, compile installable firmware binary, and capture UI test screenshots.
