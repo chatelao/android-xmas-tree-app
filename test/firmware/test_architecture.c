@@ -7,6 +7,21 @@
 #include "../../src/firmware/include/audio_engine.h"
 #include "../../src/firmware/include/nvs_manager.h"
 
+static bool s_lighting_cb_called = false;
+static bool s_audio_cb_called = false;
+
+static void on_lighting_cmd(const lighting_control_payload_t *payload) {
+    if (payload != NULL) {
+        s_lighting_cb_called = true;
+    }
+}
+
+static void on_audio_cmd(const audio_control_payload_t *payload) {
+    if (payload != NULL) {
+        s_audio_cb_called = true;
+    }
+}
+
 void test_ble_manager_stub(void) {
     printf("Testing BLE Manager stub...\n");
     ble_manager_init();
@@ -18,6 +33,68 @@ void test_ble_manager_stub(void) {
     telemetry_payload_t telemetry = {0};
     assert(ble_manager_send_telemetry(&telemetry) == false); // Not connected
     printf("  PASSED: BLE Manager stub tests\n");
+}
+
+void test_rtttl_parser_and_freq(void) {
+    printf("Testing RTTTL parser and note frequency converter...\n");
+
+    const char *jingle = audio_engine_get_rtttl_score(MELODY_JINGLE_BELLS);
+    assert(jingle != NULL && strstr(jingle, "JingleBells") != NULL);
+
+    const char *we_wish = audio_engine_get_rtttl_score(MELODY_WE_WISH_YOU);
+    assert(we_wish != NULL && strstr(we_wish, "WeWishYou") != NULL);
+
+    uint8_t duration = 0, octave = 0;
+    uint16_t bpm = 0;
+    bool parsed = audio_engine_parse_rtttl_defaults(jingle, &duration, &octave, &bpm);
+    assert(parsed == true);
+    assert(duration == 4);
+    assert(octave == 5);
+    assert(bpm == 125);
+
+    // Test note-to-frequency conversion
+    assert(audio_engine_note_to_freq('c', false, 4) == 262);
+    assert(audio_engine_note_to_freq('a', false, 4) == 440);
+    assert(audio_engine_note_to_freq('c', true, 5) == 554); // 277 * 2
+    assert(audio_engine_note_to_freq('p', false, 4) == 0);  // Rest
+
+    printf("  PASSED: RTTTL parser and note frequency converter tests\n");
+}
+
+void test_ble_cmd_dispatcher(void) {
+    printf("Testing BLE Command Dispatcher...\n");
+    ble_manager_init();
+    led_engine_init();
+    audio_engine_init();
+
+    ble_manager_register_callbacks(on_lighting_cmd, on_audio_cmd);
+
+    // Valid 8-byte lighting control frame (SET_PATTERN, SPARKLE, R=200, G=100, B=50, Brightness=90, Speed=60, 0)
+    uint8_t lighting_frame[8] = { 0x01, PATTERN_SPARKLE, 200, 100, 50, 90, 60, 0x00 };
+    assert(ble_manager_process_lighting_cmd(lighting_frame, sizeof(lighting_frame)) == true);
+    assert(s_lighting_cb_called == true);
+
+    led_engine_cmd_t led_state = {0};
+    led_engine_get_current_state(&led_state);
+    assert(led_state.pattern_id == PATTERN_SPARKLE);
+    assert(led_state.red == 200);
+    assert(led_state.brightness == 90);
+
+    // Valid 6-byte audio control frame (PLAY_SONG, DECK_THE_HALLS, PLAY, Volume=75, Tempo=110, 0)
+    uint8_t audio_frame[6] = { 0x10, MELODY_DECK_THE_HALLS, AUDIO_STATE_PLAY, 75, 110, 0x00 };
+    assert(ble_manager_process_audio_cmd(audio_frame, sizeof(audio_frame)) == true);
+    assert(s_audio_cb_called == true);
+
+    audio_engine_cmd_t audio_state = {0};
+    audio_engine_get_current_state(&audio_state);
+    assert(audio_state.melody_id == MELODY_DECK_THE_HALLS);
+    assert(audio_state.volume == 75);
+
+    // Invalid frame sizes
+    assert(ble_manager_process_lighting_cmd(lighting_frame, 5) == false);
+    assert(ble_manager_process_audio_cmd(audio_frame, 4) == false);
+
+    printf("  PASSED: BLE Command Dispatcher tests\n");
 }
 
 void test_led_engine_stub(void) {
@@ -102,6 +179,8 @@ int main(void) {
     printf("==========================================\n");
 
     test_ble_manager_stub();
+    test_rtttl_parser_and_freq();
+    test_ble_cmd_dispatcher();
     test_led_engine_stub();
     test_audio_engine_stub();
     test_nvs_manager_stub();

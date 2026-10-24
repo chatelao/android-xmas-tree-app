@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 #include "protocol_spec.h"
 
 typedef enum {
@@ -21,5 +22,8 @@ void ble_manager_init(void);
 ble_manager_state_t ble_manager_get_state(void);
 bool ble_manager_send_telemetry(const telemetry_payload_t *telemetry);
 void ble_manager_register_callbacks(ble_lighting_cmd_cb_t lighting_cb, ble_audio_cmd_cb_t audio_cb);
+
+bool ble_manager_process_lighting_cmd(const uint8_t *buffer, size_t size);
+bool ble_manager_process_audio_cmd(const uint8_t *buffer, size_t size);
 
 #endif // BLE_MANAGER_H
