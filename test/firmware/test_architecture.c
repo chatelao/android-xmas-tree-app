@@ -123,6 +123,89 @@ void test_led_engine_stub(void) {
     printf("  PASSED: LED Engine stub tests\n");
 }
 
+void test_led_engine_rendering_and_rmt(void) {
+    printf("Testing LED Engine WS2812B RMT timing and rendering algorithms...\n");
+
+    // Test RMT timing config
+    ws2812b_rmt_config_t timing = led_engine_get_rmt_timing();
+    assert(timing.gpio_pin == LED_STRIP_GPIO_PIN);
+    assert(timing.t0h_ns == 350);
+    assert(timing.t0l_ns == 800);
+    assert(timing.t1h_ns == 700);
+    assert(timing.t1l_ns == 600);
+
+    rgb_color_t pixels[LED_STRIP_NUM_LEDS] = {0};
+
+    // Test PATTERN_OFF
+    led_engine_cmd_t off_cmd = {
+        .pattern_id = PATTERN_OFF,
+        .red = 255, .green = 255, .blue = 255,
+        .brightness = 100, .speed = 50
+    };
+    assert(led_engine_render_frame(&off_cmd, 0, pixels, LED_STRIP_NUM_LEDS) == true);
+    for (int i = 0; i < LED_STRIP_NUM_LEDS; i++) {
+        assert(pixels[i].r == 0 && pixels[i].g == 0 && pixels[i].b == 0);
+    }
+
+    // Test PATTERN_STATIC
+    led_engine_cmd_t static_cmd = {
+        .pattern_id = PATTERN_STATIC,
+        .red = 200, .green = 100, .blue = 50,
+        .brightness = 50, .speed = 50
+    };
+    assert(led_engine_render_frame(&static_cmd, 0, pixels, LED_STRIP_NUM_LEDS) == true);
+    for (int i = 0; i < LED_STRIP_NUM_LEDS; i++) {
+        assert(pixels[i].r == 100);
+        assert(pixels[i].g == 50);
+        assert(pixels[i].b == 25);
+    }
+
+    // Test PATTERN_RAINBOW_WAVE
+    led_engine_cmd_t rainbow_cmd = {
+        .pattern_id = PATTERN_RAINBOW_WAVE,
+        .red = 0, .green = 0, .blue = 0,
+        .brightness = 100, .speed = 50
+    };
+    assert(led_engine_render_frame(&rainbow_cmd, 0, pixels, LED_STRIP_NUM_LEDS) == true);
+    // Ensure rendered pixels are not all zero
+    bool non_zero = false;
+    for (int i = 0; i < LED_STRIP_NUM_LEDS; i++) {
+        if (pixels[i].r > 0 || pixels[i].g > 0 || pixels[i].b > 0) non_zero = true;
+    }
+    assert(non_zero == true);
+
+    // Test PATTERN_SPARKLE
+    led_engine_cmd_t sparkle_cmd = {
+        .pattern_id = PATTERN_SPARKLE,
+        .red = 255, .green = 0, .blue = 0,
+        .brightness = 100, .speed = 50
+    };
+    assert(led_engine_render_frame(&sparkle_cmd, 1, pixels, LED_STRIP_NUM_LEDS) == true);
+
+    // Test PATTERN_FESTIVE_CANDLE
+    led_engine_cmd_t candle_cmd = {
+        .pattern_id = PATTERN_FESTIVE_CANDLE,
+        .red = 255, .green = 150, .blue = 0,
+        .brightness = 80, .speed = 30
+    };
+    assert(led_engine_render_frame(&candle_cmd, 2, pixels, LED_STRIP_NUM_LEDS) == true);
+
+    // Test PATTERN_TWINKLE
+    led_engine_cmd_t twinkle_cmd = {
+        .pattern_id = PATTERN_TWINKLE,
+        .red = 255, .green = 255, .blue = 255,
+        .brightness = 90, .speed = 40
+    };
+    assert(led_engine_render_frame(&twinkle_cmd, 5, pixels, LED_STRIP_NUM_LEDS) == true);
+
+    // Test error/null handling
+    assert(led_engine_render_frame(NULL, 0, pixels, LED_STRIP_NUM_LEDS) == false);
+    assert(led_engine_render_frame(&twinkle_cmd, 0, NULL, LED_STRIP_NUM_LEDS) == false);
+    assert(led_engine_render_frame(&twinkle_cmd, 0, pixels, 0) == false);
+
+    printf("  PASSED: LED Engine WS2812B RMT timing and rendering algorithms tests\n");
+}
+
 void test_audio_engine_stub(void) {
     printf("Testing Audio Engine stub...\n");
     audio_engine_init();
@@ -182,6 +265,7 @@ int main(void) {
     test_rtttl_parser_and_freq();
     test_ble_cmd_dispatcher();
     test_led_engine_stub();
+    test_led_engine_rendering_and_rmt();
     test_audio_engine_stub();
     test_nvs_manager_stub();
 
