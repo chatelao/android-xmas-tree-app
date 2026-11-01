@@ -228,6 +228,113 @@ void test_audio_engine_stub(void) {
     printf("  PASSED: Audio Engine stub tests\n");
 }
 
+void test_audio_engine_ledc_and_playback(void) {
+    printf("Testing LEDC PWM driver setup and tone playback controller...\n");
+
+    // 1. LEDC PWM driver configuration
+    ledc_speaker_config_t config = audio_engine_get_ledc_config();
+    assert(config.gpio_pin == SPEAKER_LEDC_GPIO_PIN);
+    assert(config.gpio_pin == 19);
+    assert(config.timer_num == 0);
+    assert(config.channel == 0);
+    assert(config.duty_resolution_bits == 10);
+    assert(config.base_freq_hz == 440);
+
+    // 2. Volume to PWM Duty cycle calculation (10-bit: max duty at 50% = 512)
+    assert(audio_engine_calculate_duty(0, 10) == 0);
+    assert(audio_engine_calculate_duty(50, 10) == 256);
+    assert(audio_engine_calculate_duty(100, 10) == 512);
+    assert(audio_engine_calculate_duty(120, 10) == 512); // Clamped at 100%
+    assert(audio_engine_calculate_duty(50, 0) == 0);
+
+    // 3. Direct Tone playback
+    assert(audio_engine_play_tone(440, 250, 80) == true);
+    audio_note_t active_note = {0};
+    assert(audio_engine_get_current_note(&active_note) == true);
+    assert(active_note.frequency_hz == 440);
+    assert(active_note.duration_ms == 250);
+
+    // Tone playback with volume 0 (mute)
+    assert(audio_engine_play_tone(440, 250, 0) == true);
+    assert(audio_engine_get_current_note(&active_note) == true);
+    assert(active_note.frequency_hz == 0);
+    assert(active_note.duration_ms == 250);
+
+    // 4. RTTTL Note token parsing
+    // Jingle bells notes part: "8g,8e,8d,c,2g,..."
+    // d=4, o=5, b=125. Whole note = 240000 / 125 = 1920 ms.
+    // 8g (8th note) duration = 1920 / 8 = 240 ms.
+    const char *score = audio_engine_get_rtttl_score(MELODY_JINGLE_BELLS);
+    const char *notes_ptr = strchr(score, ':');
+    assert(notes_ptr != NULL);
+    notes_ptr = strchr(notes_ptr + 1, ':');
+    assert(notes_ptr != NULL);
+    notes_ptr++; // Points to "8g,8e,8d,c,2g,..."
+
+    audio_note_t note;
+    bool parsed = audio_engine_parse_next_note(&notes_ptr, 4, 5, 125, 100, &note);
+    assert(parsed == true);
+    assert(note.frequency_hz == audio_engine_note_to_freq('g', false, 5)); // G5
+    assert(note.duration_ms == 240); // 1920 / 8
+
+    // Next note: 8e
+    parsed = audio_engine_parse_next_note(&notes_ptr, 4, 5, 125, 100, &note);
+    assert(parsed == true);
+    assert(note.frequency_hz == audio_engine_note_to_freq('e', false, 5)); // E5
+    assert(note.duration_ms == 240);
+
+    // 5. Test dotted note and octave override (e.g. from Silent Night: "4.g" or "2d6")
+    // Silent Night: d=4, o=5, b=90. Whole note = 240000 / 90 = 2666 ms.
+    // 4th note = 2666 / 4 = 666 ms. Dotted = 666 + 333 = 999 ms.
+    const char *sn_notes = "4.g,2d6";
+    parsed = audio_engine_parse_next_note(&sn_notes, 4, 5, 90, 100, &note);
+    assert(parsed == true);
+    assert(note.frequency_hz == audio_engine_note_to_freq('g', false, 5));
+    assert(note.duration_ms == 999);
+
+    // Next: 2d6 -> half note (duration=2), D in octave 6
+    parsed = audio_engine_parse_next_note(&sn_notes, 4, 5, 90, 100, &note);
+    assert(parsed == true);
+    assert(note.frequency_hz == audio_engine_note_to_freq('d', false, 6));
+    assert(note.duration_ms == 1333); // 2666 / 2
+
+    // 6. Test tempo modifier scaling (tempo = 200 -> half duration; tempo = 50 -> double duration)
+    const char *tempo_test = "8c";
+    parsed = audio_engine_parse_next_note(&tempo_test, 4, 5, 125, 200, &note);
+    assert(parsed == true);
+    assert(note.duration_ms == 120); // 240 / 2
+
+    tempo_test = "8c";
+    parsed = audio_engine_parse_next_note(&tempo_test, 4, 5, 125, 50, &note);
+    assert(parsed == true);
+    assert(note.duration_ms == 480); // 240 * 2
+
+    // 7. Full melody playback controller sequence
+    audio_engine_init();
+    assert(audio_engine_start_melody(MELODY_JINGLE_BELLS, 70, 100) == true);
+
+    // Step first note
+    assert(audio_engine_step_playback(&note) == true);
+    assert(note.frequency_hz == audio_engine_note_to_freq('g', false, 5));
+    assert(audio_engine_get_current_note(&active_note) == true);
+    assert(active_note.frequency_hz == note.frequency_hz);
+
+    // Run audio_engine_task to advance playback
+    audio_engine_task(NULL);
+    assert(audio_engine_get_current_note(&active_note) == true);
+
+    // Stop melody
+    audio_engine_stop_melody();
+    assert(audio_engine_get_current_note(&active_note) == true);
+    assert(active_note.frequency_hz == 0);
+    assert(audio_engine_step_playback(&note) == false);
+
+    // Silent melody handling
+    assert(audio_engine_start_melody(MELODY_SILENT, 50, 100) == false);
+
+    printf("  PASSED: LEDC PWM driver setup and tone playback controller tests\n");
+}
+
 void test_nvs_manager_stub(void) {
     printf("Testing NVS Manager stub...\n");
     nvs_manager_init();
@@ -267,6 +374,7 @@ int main(void) {
     test_led_engine_stub();
     test_led_engine_rendering_and_rmt();
     test_audio_engine_stub();
+    test_audio_engine_ledc_and_playback();
     test_nvs_manager_stub();
 
     printf("==========================================\n");

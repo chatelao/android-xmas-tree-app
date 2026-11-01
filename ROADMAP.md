@@ -85,9 +85,9 @@ Parallel implementation of client and firmware functionality against established
 * [ ] **Task 4.2: ESP32-C6 Neopixel Lighting Engine** ⏳
   * [x] Implement RMT peripheral driver setup & WS2812B pulse timing descriptor helper on GPIO 8. ✅
   * [x] Implement pattern rendering algorithms (Static Color, Rainbow Wave, Sparkle, Festive Candle, Twinkle). ✅
-* [ ] **Task 4.3: ESP32-C6 Audio / Melody Engine** ⏳
+* [x] **Task 4.3: ESP32-C6 Audio / Melody Engine** ✅
   * [x] Implement RTTTL festive melody score definitions and note frequency converter (Jingle Bells, We Wish You a Merry Christmas, Silent Night, Deck the Halls). ✅
-  * [ ] Implement LEDC PWM peripheral driver on GPIO 19 and tone playback task controller.
+  * [x] Implement LEDC PWM peripheral driver on GPIO 19 and tone playback task controller. ✅
 
 ---
 
