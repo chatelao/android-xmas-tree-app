@@ -47,14 +47,6 @@ android {
         kotlinCompilerExtensionVersion = "1.5.10"
     }
 
-    sourceSets {
-        getByName("main") {
-            // Kotlin implementations in GattProfile.kt and ProtocolSpec.kt are authoritative for Gradle builds;
-            // the .java equivalents are retained for standalone javac protocol tests.
-            java.filter.exclude("com/xmastree/remote/protocol/*.java")
-        }
-    }
-
     testOptions {
         unitTests.all {
             it.useJUnitPlatform()
@@ -66,6 +58,12 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    // Kotlin implementations in GattProfile.kt and ProtocolSpec.kt are authoritative for Gradle builds;
+    // the .java equivalents are retained for standalone javac protocol tests.
+    exclude("com/xmastree/remote/protocol/*.java")
 }
 
 dependencies {
