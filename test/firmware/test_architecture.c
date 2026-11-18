@@ -9,6 +9,8 @@
 
 static bool s_lighting_cb_called = false;
 static bool s_audio_cb_called = false;
+static int s_telemetry_notify_count = 0;
+static uint8_t s_last_notified_frame[TELEMETRY_PAYLOAD_SIZE] = {0};
 
 static void on_lighting_cmd(const lighting_control_payload_t *payload) {
     if (payload != NULL) {
@@ -19,6 +21,13 @@ static void on_lighting_cmd(const lighting_control_payload_t *payload) {
 static void on_audio_cmd(const audio_control_payload_t *payload) {
     if (payload != NULL) {
         s_audio_cb_called = true;
+    }
+}
+
+static void on_telemetry_notify(const uint8_t *frame, size_t size) {
+    if (frame != NULL && size == TELEMETRY_PAYLOAD_SIZE) {
+        s_telemetry_notify_count++;
+        memcpy(s_last_notified_frame, frame, TELEMETRY_PAYLOAD_SIZE);
     }
 }
 
@@ -371,6 +380,80 @@ void test_audio_ledc_and_playback_controller(void) {
     printf("  PASSED: Audio Engine LEDC PWM driver and playback controller tests\n");
 }
 
+void test_ble_telemetry_notifications(void) {
+    printf("Testing BLE Periodic Telemetry Notifications...\n");
+    ble_manager_init();
+    led_engine_init();
+    audio_engine_init();
+
+    s_telemetry_notify_count = 0;
+    memset(s_last_notified_frame, 0, sizeof(s_last_notified_frame));
+    ble_manager_register_telemetry_callback(on_telemetry_notify);
+
+    // Set active LED and Audio states
+    led_engine_cmd_t led_cmd = {
+        .pattern_id = PATTERN_TWINKLE,
+        .red = 0, .green = 255, .blue = 128,
+        .brightness = 85, .speed = 60
+    };
+    assert(led_engine_send_command(&led_cmd) == true);
+
+    audio_engine_cmd_t audio_cmd = {
+        .melody_id = MELODY_SILENT_NIGHT,
+        .playback_state = AUDIO_STATE_PLAY,
+        .volume = 70, .tempo = 100
+    };
+    assert(audio_engine_send_command(&audio_cmd) == true);
+
+    // Disconnected: tick must not send
+    assert(ble_manager_telemetry_tick(1000) == false);
+    assert(s_telemetry_notify_count == 0);
+
+    // Connected but unsubscribed: tick must not send
+    ble_manager_set_state(BLE_STATE_CONNECTED);
+    assert(ble_manager_telemetry_tick(1000) == false);
+    assert(s_telemetry_notify_count == 0);
+
+    // Connected and subscribed: tick sends 10-byte telemetry frame
+    ble_manager_set_telemetry_subscribed(true);
+    assert(ble_manager_is_telemetry_subscribed() == true);
+    assert(ble_manager_telemetry_tick(1000) == true);
+    assert(s_telemetry_notify_count == 1);
+
+    // Parse notified frame and verify fields
+    telemetry_payload_t parsed = {0};
+    assert(parse_telemetry_frame(s_last_notified_frame, TELEMETRY_PAYLOAD_SIZE, &parsed) == PROTOCOL_OK);
+    assert(parsed.system_uptime == 1);
+    assert(parsed.current_pattern == PATTERN_TWINKLE);
+    assert(parsed.current_melody == MELODY_SILENT_NIGHT);
+    assert(parsed.current_brightness == 85);
+    assert(parsed.current_volume == 70);
+    assert(parsed.connection_state == 1);
+    assert(parsed.error_code == ERROR_CODE_OK);
+
+    // Rate-limited before BLE_TELEMETRY_INTERVAL_MS (1000ms)
+    assert(ble_manager_telemetry_tick(1500) == false);
+    assert(s_telemetry_notify_count == 1);
+
+    // Next interval at 2000ms sends updated uptime and error code
+    ble_manager_set_error_code(ERROR_CODE_NVS_ERROR);
+    assert(ble_manager_telemetry_tick(2000) == true);
+    assert(s_telemetry_notify_count == 2);
+
+    uint8_t last_frame[TELEMETRY_PAYLOAD_SIZE] = {0};
+    assert(ble_manager_get_last_telemetry_frame(last_frame, sizeof(last_frame)) == true);
+    assert(parse_telemetry_frame(last_frame, sizeof(last_frame), &parsed) == PROTOCOL_OK);
+    assert(parsed.system_uptime == 2);
+    assert(parsed.error_code == ERROR_CODE_NVS_ERROR);
+
+    // Disconnecting clears telemetry subscription
+    ble_manager_set_state(BLE_STATE_DISCONNECTED);
+    assert(ble_manager_is_telemetry_subscribed() == false);
+    assert(ble_manager_telemetry_tick(3000) == false);
+
+    printf("  PASSED: BLE Periodic Telemetry Notifications tests\n");
+}
+
 int main(void) {
     printf("==========================================\n");
     printf("Running Firmware Architecture Unit Tests\n");
@@ -384,6 +467,7 @@ int main(void) {
     test_audio_engine_stub();
     test_nvs_manager_stub();
     test_audio_ledc_and_playback_controller();
+    test_ble_telemetry_notifications();
 
     printf("==========================================\n");
     printf("All Firmware Architecture Tests Passed Successfully!\n");

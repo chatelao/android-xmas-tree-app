@@ -8,7 +8,7 @@
 | **Phase 2** | Technical Interfaces & Binary Protocol Specifications | ✅ |
 | **Phase 3** | Core Architecture Stubs & Interface Definitions | ✅ |
 | **Phase 4** | Subsystem Implementations (Android App & ESP32-C6 Firmware) | 🚧 |
-| **Phase 5** | Integration, Preset Management & System Telemetry | ⏳ |
+| **Phase 5** | Integration, Preset Management & System Telemetry | 🚧 |
 | **Phase 6** | System Verification, Automated Testing & CI/CD Pipeline | ⏳ |
 
 ---
@@ -97,7 +97,7 @@ Connect client and firmware subsystems, enabling end-to-end user features.
 
 * [ ] **Task 5.1: Device State Synchronization & Telemetry** ⏳
   * [x] Connect ESP32-C6 `cmd_dispatcher_task` to parse incoming BLE byte payloads and dispatch to callbacks. ✅
-  * [ ] Enable periodic telemetry notifications over BLE GATT Telemetry Characteristic.
+  * [x] Enable periodic telemetry notifications over BLE GATT Telemetry Characteristic. ✅
   * [ ] Update Android `MainViewModel` to reactively reflect current tree status.
 * [ ] **Task 5.2: Preset Management Implementation** ⏳
   * [ ] Implement local Jetpack DataStore persistence on Android for saving multi-parameter themes.
