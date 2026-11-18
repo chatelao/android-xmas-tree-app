@@ -3,8 +3,12 @@ name: CI Build and Test Pipeline
 on:
   push:
     branches: [ "main", "master", "feature/*" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main", "master" ]
+
+permissions:
+  contents: write
 
 jobs:
   build-and-test:
@@ -14,11 +18,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '17'
 
       - name: Cache Gradle packages
         uses: actions/cache@v4
@@ -26,7 +30,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
@@ -47,3 +51,42 @@ jobs:
         run: |
           chmod +x test/install.sh
           ./test/install.sh
+
+      - name: Run Firmware Unit Tests
+        run: |
+          mkdir -p build
+          gcc -Wall -Wextra -Werror -Isrc/firmware/include src/firmware/src/*.c test/firmware/test_architecture.c -o build/test_architecture
+          ./build/test_architecture
+          gcc -Wall -Wextra -Werror -Isrc/firmware/include src/firmware/src/protocol_spec.c test/firmware/test_protocol.c -o build/test_protocol
+          ./build/test_protocol
+
+      - name: Run Standalone Android Protocol & Architecture Tests
+        run: |
+          mkdir -p build/android_test
+          javac -d build/android_test src/android/app/src/main/java/com/xmastree/remote/protocol/*.java src/android/app/src/main/java/com/xmastree/remote/ble/*.java src/android/app/src/main/java/com/xmastree/remote/data/*.java src/android/app/src/main/java/com/xmastree/remote/ui/*.java test/android/*.java
+          java -ea -cp build/android_test test.android.ProtocolTest
+          java -ea -cp build/android_test test.android.ArchitectureTest
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.5'
+
+      - name: Build Android APK and Run JUnit 5 Tests
+        run: gradle -p src/android testDebugUnitTest assembleDebug --no-daemon
+
+      - name: Upload Installable Android APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: XmasTreeRemote-apk
+          path: src/android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Attach APK to GitHub Release on Tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME="${GITHUB_REF_NAME}"
+          APK_OUT="XmasTreeRemote-${TAG_NAME}.apk"
+          cp src/android/app/build/outputs/apk/debug/app-debug.apk "${APK_OUT}"
+          gh release upload "${TAG_NAME}" "${APK_OUT}" --clobber
