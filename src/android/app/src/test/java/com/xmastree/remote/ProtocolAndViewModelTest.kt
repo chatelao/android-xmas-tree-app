@@ -21,8 +21,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
@@ -191,7 +193,7 @@ class ProtocolAndViewModelTest {
         val vm = TreeRemoteViewModel(switchable, store)
 
         vm.setSimulationMode(true)
-        advanceUntilIdle()
+        runCurrent()
         assertEquals(true, vm.uiState.value.isSimulationMode)
 
         val discovered = mutableListOf<ScannedDevice>()
@@ -200,14 +202,15 @@ class ProtocolAndViewModelTest {
         assertEquals(com.xmastree.remote.ble.SimulatedBleClient.SIMULATED_DEVICE_ADDRESS, discovered.first().address)
 
         vm.connect(discovered.first().address)
-        advanceUntilIdle()
+        advanceTimeBy(400)
+        runCurrent()
         assertEquals(BleConnectionState.CONNECTED, vm.uiState.value.connectionState)
 
         vm.selectPattern(PatternId.SPARKLE)
         vm.setBrightness(77)
         vm.playAudio()
         vm.setVolume(65)
-        advanceUntilIdle()
+        runCurrent()
 
         val telemetry = vm.uiState.value.telemetry
         assertNotNull(telemetry)
@@ -217,7 +220,7 @@ class ProtocolAndViewModelTest {
         assertEquals(0, realClient.sentLightingFrames.size)
 
         vm.disconnect()
-        advanceUntilIdle()
+        runCurrent()
         assertEquals(BleConnectionState.DISCONNECTED, vm.uiState.value.connectionState)
     }
 }
