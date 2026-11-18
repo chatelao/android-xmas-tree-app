@@ -128,7 +128,7 @@ class ProtocolAndViewModelTest {
     }
 
     @Test
-    fun `viewModel dispatches commands, syncs telemetry, and manages presets`() = runTest {
+    fun `viewModel dispatches commands, syncs telemetry, and manages presets`() = runTest(testDispatcher) {
         val ble = FakeBleClient()
         val store = FakePresetStore()
         val vm = TreeRemoteViewModel(ble, store)
@@ -179,7 +179,7 @@ class ProtocolAndViewModelTest {
     }
 
     @Test
-    fun `simulation mode discovers virtual tree, connects, and updates telemetry`() = runTest {
+    fun `simulation mode discovers virtual tree, connects, and updates telemetry`() = runTest(testDispatcher) {
         val realClient = FakeBleClient()
         val simClient = com.xmastree.remote.ble.SimulatedBleClient(scope = backgroundScope)
         val switchable = com.xmastree.remote.ble.SwitchableBleClient(
