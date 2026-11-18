@@ -61,9 +61,12 @@ android {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    // Kotlin implementations in GattProfile.kt and ProtocolSpec.kt are authoritative for Gradle builds;
-    // the .java equivalents are retained for standalone javac protocol tests.
+    // Kotlin implementations are authoritative for Gradle APK builds;
+    // legacy Java stubs are retained for standalone javac protocol/architecture tests.
     exclude("com/xmastree/remote/protocol/*.java")
+    exclude("com/xmastree/remote/ble/BleManager.java")
+    exclude("com/xmastree/remote/data/Preset.java")
+    exclude("com/xmastree/remote/ui/MainViewModel.java")
 }
 
 dependencies {
