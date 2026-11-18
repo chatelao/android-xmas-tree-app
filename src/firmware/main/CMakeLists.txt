@@ -1,0 +1,16 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "../src/protocol_spec.c"
+        "../src/led_engine.c"
+        "../src/audio_engine.c"
+        "../src/ble_manager.c"
+        "../src/nvs_manager.c"
+    INCLUDE_DIRS
+        "../include"
+    REQUIRES
+        bt
+        nvs_flash
+        driver
+        freertos
+)

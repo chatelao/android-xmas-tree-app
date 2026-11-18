@@ -15,3 +15,6 @@ test/test_firmware_protocol
 .idea/
 .gradle/
 build/
+node_modules/
+src/firmware/sdkconfig
+

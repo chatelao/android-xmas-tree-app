@@ -113,7 +113,7 @@ Ensure system quality, reliability, and automated validation.
 * [x] **Task 6.1: Automated Unit Testing** ✅
   * [x] Write Android protocol & architecture unit tests using JUnit 5 and MockK for frame packing/unpacking and ViewModel transitions. ✅
   * [x] Write ESP32-C6 firmware unit tests for binary packet parsing, BLE command dispatching, and RTTTL score conversion. ✅
-* [ ] **Task 6.2: Frontend UI & Workflow Verification** ⏳
-  * [ ] Implement Playwright tests for capturing Compose UI screens and end-to-end workflows.
+* [x] **Task 6.2: Frontend UI & Workflow Verification** ✅
+  * [x] Implement Playwright tests for capturing Compose UI screens and end-to-end workflows. ✅
 * [ ] **Task 6.3: CI/CD Finalization** 🚧
   * [ ] Finalize GitHub Actions workflow to run unit tests, build installable Android APK, compile installable firmware binary, and capture UI test screenshots.

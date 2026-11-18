@@ -31,6 +31,13 @@ fi
 if [ -f "${REPO_ROOT}/test/package.json" ]; then
     echo "Installing test dependencies from ${REPO_ROOT}/test/package.json..."
     (cd "${REPO_ROOT}/test" && npm install)
+    if [ "${CI:-false}" = "true" ] || [ "$(id -u)" -eq 0 ]; then
+        echo "Installing Playwright Chromium with system dependencies..."
+        (cd "${REPO_ROOT}/test" && npx playwright install --with-deps chromium)
+    else
+        echo "Installing Playwright Chromium..."
+        (cd "${REPO_ROOT}/test" && npx playwright install chromium)
+    fi
 fi
 
 echo "=========================================="

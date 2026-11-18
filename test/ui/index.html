@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xmas Tree Remote - UI Verification Harness</title>
+  <style>
+    :root {
+      --bg: #fef7ff;
+      --surface: #f3edf7;
+      --primary: #6750a4;
+      --on-primary: #ffffff;
+      --primary-container: #eaddff;
+      --tertiary-container: #ffd8e4;
+      --outline: #79747e;
+      --text: #1d1b20;
+      --subtext: #49454f;
+    }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; }
+    header { padding: 14px 16px; background: var(--bg); border-bottom: 1px solid #e6e0e9; }
+    header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+    header .subtitle { font-size: 12px; color: var(--subtext); margin-top: 2px; }
+    main { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .card { background: var(--surface); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .card.connected { background: var(--primary-container); }
+    .card.sim { background: var(--tertiary-container); }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .btn { background: var(--primary); color: var(--on-primary); border: none; border-radius: 20px; padding: 10px 16px; font-weight: 600; cursor: pointer; }
+    .btn:disabled { opacity: 0.45; cursor: default; }
+    .btn.outlined { background: transparent; color: var(--primary); border: 1px solid var(--outline); }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { border: 1px solid var(--outline); background: transparent; border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+    .chip.selected { background: var(--primary-container); border-color: var(--primary); font-weight: 600; }
+    .swatch { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--outline); cursor: pointer; }
+    .preview-dot { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--outline); }
+    input[type="range"] { width: 100%; accent-color: var(--primary); }
+    input[type="text"] { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--outline); }
+    nav { display: flex; border-top: 1px solid #e6e0e9; background: var(--surface); }
+    nav button { flex: 1; padding: 12px; border: none; background: transparent; font-weight: 600; color: var(--subtext); cursor: pointer; }
+    nav button.active { color: var(--primary); background: var(--primary-container); }
+    .hidden { display: none !important; }
+    .mono { font-family: monospace; font-size: 12px; color: var(--subtext); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Xmas Tree Remote</h1>
+    <div id="topbar-subtitle" class="subtitle">BLE: DISCONNECTED</div>
+  </header>
+
+  <main>
+    <!-- SCAN SCREEN -->
+    <section id="screen-scan">
+      <div id="sim-card" class="card">
+        <div class="row">
+          <div>
+            <strong>Simulation Mode</strong>
+            <div class="subtitle">Test all UI screens &amp; telemetry without a physical BLE device</div>
+          </div>
+          <input id="sim-toggle" type="checkbox" aria-label="Simulation Mode" />
+        </div>
+      </div>
+
+      <div id="status-card" class="card" style="margin-top:12px;">
+        <div class="row">
+          <div>
+            <strong id="status-text">Status: DISCONNECTED</strong>
+            <div id="connected-addr" class="subtitle"></div>
+          </div>
+          <button id="btn-disconnect" class="btn outlined hidden">Disconnect</button>
+        </div>
+      </div>
+
+      <button id="btn-scan" class="btn" style="margin-top:12px; width:100%;">Scan for Xmas Tree</button>
+      <h3 style="margin:12px 0 4px;">Discovered Devices (<span id="device-count">0</span>)</h3>
+      <div id="device-list"></div>
+    </section>
+
+    <!-- CONTROL SCREEN -->
+    <section id="screen-control" class="hidden">
+      <div class="card">
+        <strong>Lighting Pattern</strong>
+        <div id="pattern-chips" class="chips"></div>
+        <div class="row">
+          <canvas id="color-wheel" width="140" height="140" style="border-radius:50%; border:1px solid #ccc;"></canvas>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div id="color-preview" class="preview-dot" style="background:rgb(255,50,50);"></div>
+            <div id="rgb-label" class="mono">RGB(255, 50, 50)</div>
+            <div class="row">
+              <div class="swatch" data-rgb="255,0,0" style="background:rgb(255,0,0);"></div>
+              <div class="swatch" data-rgb="0,200,50" style="background:rgb(0,200,50);"></div>
+              <div class="swatch" data-rgb="255,190,0" style="background:rgb(255,190,0);"></div>
+              <div class="swatch" data-rgb="0,140,255" style="background:rgb(0,140,255);"></div>
+            </div>
+          </div>
+        </div>
+        <label>Brightness: <span id="brightness-val">80</span>%</label>
+        <input id="slider-brightness" type="range" min="0" max="100" value="80" />
+        <label>Animation Speed: <span id="speed-val">50</span>%</label>
+        <input id="slider-speed" type="range" min="1" max="100" value="50" />
+      </div>
+
+      <div class="card" style="margin-top:12px;">
+        <strong>Festive Melody Player</strong>
+        <div id="melody-chips" class="chips"></div>
+        <div class="row">
+          <button id="btn-play" class="btn" style="flex:1;">Play</button>
+          <button id="btn-pause" class="btn outlined" style="flex:1;">Pause</button>
+          <button id="btn-stop" class="btn outlined" style="flex:1;">Stop</button>
+        </div>
+        <label>Volume: <span id="volume-val">70</span>%</label>
+        <input id="slider-volume" type="range" min="0" max="100" value="70" />
+        <div id="wire-frame" class="mono">Last Frame: none</div>
+      </div>
+    </section>
+
+    <!-- PRESETS SCREEN -->
+    <section id="screen-presets" class="hidden">
+      <div class="card">
+        <strong>Save Current Configuration</strong>
+        <div class="row">
+          <input id="preset-name-input" type="text" placeholder="Preset Name" />
+          <button id="btn-save-preset" class="btn">Save</button>
+        </div>
+      </div>
+      <h3 style="margin:12px 0 4px;">Saved Presets (<span id="preset-count">0</span>)</h3>
+      <div id="preset-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </section>
+  </main>
+
+  <nav>
+    <button id="nav-scan" class="active">Scan</button>
+    <button id="nav-control">Control</button>
+    <button id="nav-presets">Presets</button>
+  </nav>
+
+  <script>
+    const PATTERNS = ["Off", "Static", "Rainbow", "Sparkle", "Candle", "Twinkle"];
+    const MELODIES = ["Silent", "Jingle Bells", "We Wish You", "Silent Night", "Deck the Halls"];
+    const state = {
+      sim: false,
+      connected: false,
+      patternIdx: 2,
+      rgb: [255, 50, 50],
+      brightness: 80,
+      speed: 50,
+      melodyIdx: 1,
+      playback: "STOP",
+      volume: 70,
+      uptime: 0,
+      presets: [
+        { id: "p1", name: "Classic Christmas", patternIdx: 4, rgb: [255, 60, 10], brightness: 85, speed: 45, melodyIdx: 1, volume: 70 },
+        { id: "p2", name: "Rainbow Party", patternIdx: 2, rgb: [0, 255, 128], brightness: 90, speed: 75, melodyIdx: 4, volume: 75 }
+      ]
+    };
+
+    const hex = (n) => n.toString(16).padStart(2, "0").toUpperCase();
+    function updateHeader() {
+      const prefix = state.sim ? "[SIM] " : "";
+      const sub = state.connected
+        ? `${prefix}Connected • Up ${state.uptime}s • Bright ${state.brightness}% • Vol ${state.volume}%`
+        : `${prefix}BLE: DISCONNECTED`;
+      document.getElementById("topbar-subtitle").textContent = sub;
+      document.getElementById("status-text").textContent = state.connected ? "Status: CONNECTED" : "Status: DISCONNECTED";
+      document.getElementById("status-card").classList.toggle("connected", state.connected);
+      document.getElementById("btn-disconnect").classList.toggle("hidden", !state.connected);
+      document.getElementById("connected-addr").textContent = state.connected ? "SIM:00:11:22:33:44:55" : "";
+    }
+
+    function renderChips() {
+      const pWrap = document.getElementById("pattern-chips");
+      pWrap.innerHTML = "";
+      PATTERNS.forEach((name, idx) => {
+        const b = document.createElement("button");
+        b.className = "chip" + (state.patternIdx === idx ? " selected" : "");
+        b.textContent = name;
+        b.onclick = () => { state.patternIdx = idx; sendLightingFrame(0x01); renderChips(); };
+        pWrap.appendChild(b);
+      });
+      const mWrap = document.getElementById("melody-chips");
+      mWrap.innerHTML = "";
+      MELODIES.forEach((name, idx) => {
+        const b = document.createElement("button");
+        b.className = "chip" + (state.melodyIdx === idx ? " selected" : "");
+        b.textContent = name;
+        b.onclick = () => { state.melodyIdx = idx; sendAudioFrame(0x10); renderChips(); };
+        mWrap.appendChild(b);
+      });
+    }
+
+    function sendLightingFrame(cmd) {
+      const bytes = [cmd, state.patternIdx, state.rgb[0], state.rgb[1], state.rgb[2], state.brightness, state.speed, 0x00];
+      document.getElementById("wire-frame").textContent = "Last Frame (LED): " + bytes.map(hex).join(" ");
+      updateHeader();
+    }
+
+    function sendAudioFrame(cmd) {
+      const pb = state.playback === "PLAY" ? 1 : (state.playback === "PAUSE" ? 2 : 0);
+      const bytes = [cmd, state.melodyIdx, pb, state.volume, 100, 0x00];
+      document.getElementById("wire-frame").textContent = "Last Frame (Audio): " + bytes.map(hex).join(" ");
+      updateHeader();
+    }
+
+    function renderPresets() {
+      document.getElementById("preset-count").textContent = state.presets.length;
+      const list = document.getElementById("preset-list");
+      list.innerHTML = "";
+      state.presets.forEach((p) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<div class="row"><div><strong>${p.name}</strong><div class="subtitle">${PATTERNS[p.patternIdx]} • ${MELODIES[p.melodyIdx]} • ${p.brightness}%</div></div><button class="btn">Apply</button></div>`;
+        card.querySelector("button").onclick = () => {
+          state.patternIdx = p.patternIdx;
+          state.rgb = [...p.rgb];
+          state.brightness = p.brightness;
+          state.speed = p.speed;
+          state.melodyIdx = p.melodyIdx;
+          state.volume = p.volume;
+          state.playback = "PLAY";
+          document.getElementById("slider-brightness").value = p.brightness;
+          document.getElementById("brightness-val").textContent = p.brightness;
+          document.getElementById("slider-volume").value = p.volume;
+          document.getElementById("volume-val").textContent = p.volume;
+          renderChips();
+          sendLightingFrame(0x01);
+        };
+        list.appendChild(card);
+      });
+    }
+
+    // Color wheel canvas
+    const canvas = document.getElementById("color-wheel");
+    const ctx = canvas.getContext("2d");
+    const r = canvas.width / 2;
+    for (let deg = 0; deg < 360; deg++) {
+      ctx.beginPath();
+      ctx.moveTo(r, r);
+      ctx.arc(r, r, r, (deg * Math.PI) / 180, ((deg + 2) * Math.PI) / 180);
+      ctx.closePath();
+      ctx.fillStyle = `hsl(${deg}, 100%, 50%)`;
+      ctx.fill();
+    }
+
+    document.querySelectorAll(".swatch").forEach((el) => {
+      el.onclick = () => {
+        state.rgb = el.dataset.rgb.split(",").map(Number);
+        document.getElementById("color-preview").style.background = `rgb(${state.rgb.join(",")})`;
+        document.getElementById("rgb-label").textContent = `RGB(${state.rgb.join(", ")})`;
+        sendLightingFrame(0x02);
+      };
+    });
+
+    document.getElementById("sim-toggle").onchange = (e) => {
+      state.sim = e.target.checked;
+      document.getElementById("sim-card").classList.toggle("sim", state.sim);
+      if (!state.sim) { state.connected = false; document.getElementById("device-list").innerHTML = ""; document.getElementById("device-count").textContent = "0"; }
+      updateHeader();
+    };
+
+    document.getElementById("btn-scan").onclick = () => {
+      if (!state.sim) return;
+      document.getElementById("device-count").textContent = "1";
+      const list = document.getElementById("device-list");
+      list.innerHTML = `<div class="card"><div class="row"><div><strong>XmasTree-ESP32C6 (Sim)</strong><div class="subtitle">SIM:00:11:22:33:44:55 • -42 dBm</div></div><button id="btn-connect-sim" class="btn">Connect</button></div></div>`;
+      document.getElementById("btn-connect-sim").onclick = () => {
+        state.connected = true;
+        state.uptime = 1;
+        updateHeader();
+      };
+    };
+
+    document.getElementById("btn-disconnect").onclick = () => { state.connected = false; updateHeader(); };
+    document.getElementById("slider-brightness").oninput = (e) => { state.brightness = Number(e.target.value); document.getElementById("brightness-val").textContent = state.brightness; sendLightingFrame(0x03); };
+    document.getElementById("slider-speed").oninput = (e) => { state.speed = Number(e.target.value); document.getElementById("speed-val").textContent = state.speed; sendLightingFrame(0x01); };
+    document.getElementById("slider-volume").oninput = (e) => { state.volume = Number(e.target.value); document.getElementById("volume-val").textContent = state.volume; sendAudioFrame(0x13); };
+    document.getElementById("btn-play").onclick = () => { state.playback = "PLAY"; sendAudioFrame(0x10); };
+    document.getElementById("btn-pause").onclick = () => { state.playback = "PAUSE"; sendAudioFrame(0x10); };
+    document.getElementById("btn-stop").onclick = () => { state.playback = "STOP"; sendAudioFrame(0x11); };
+
+    document.getElementById("btn-save-preset").onclick = () => {
+      const input = document.getElementById("preset-name-input");
+      const name = input.value.trim();
+      if (!name) return;
+      state.presets.push({ id: "p" + Date.now(), name, patternIdx: state.patternIdx, rgb: [...state.rgb], brightness: state.brightness, speed: state.speed, melodyIdx: state.melodyIdx, volume: state.volume });
+      input.value = "";
+      renderPresets();
+    };
+
+    const tabs = ["scan", "control", "presets"];
+    tabs.forEach((t) => {
+      document.getElementById(`nav-${t}`).onclick = () => {
+        tabs.forEach((other) => {
+          document.getElementById(`screen-${other}`).classList.toggle("hidden", other !== t);
+          document.getElementById(`nav-${other}`).classList.toggle("active", other === t);
+        });
+      };
+    });
+
+    renderChips();
+    renderPresets();
+    updateHeader();
+  </script>
+</body>
+</html>

@@ -42,12 +42,24 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-espressif-
 
+      - name: Cache npm and Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('test/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - name: Run src/install.sh
         run: |
           chmod +x src/install.sh
           ./src/install.sh
 
       - name: Run test/install.sh
+        env:
+          CI: 'true'
         run: |
           chmod +x test/install.sh
           ./test/install.sh
@@ -66,6 +78,15 @@ jobs:
           javac -d build/android_test src/android/app/src/main/java/com/xmastree/remote/protocol/*.java src/android/app/src/main/java/com/xmastree/remote/ble/*.java src/android/app/src/main/java/com/xmastree/remote/data/*.java src/android/app/src/main/java/com/xmastree/remote/ui/*.java test/android/*.java
           java -ea -cp build/android_test test.android.ProtocolTest
           java -ea -cp build/android_test test.android.ArchitectureTest
+
+      - name: Run Playwright UI & Workflow Tests
+        run: npm --prefix test run test:ui
+
+      - name: Upload UI Test Screenshots Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-screenshots
+          path: build/ui_screenshots/*.png
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -90,3 +111,28 @@ jobs:
           APK_OUT="XmasTreeRemote-${TAG_NAME}.apk"
           cp src/android/app/build/outputs/apk/debug/app-debug.apk "${APK_OUT}"
           gh release upload "${TAG_NAME}" "${APK_OUT}" --clobber
+
+  build-firmware:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build ESP32-C6 Firmware with ESP-IDF
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.3.1
+          target: esp32c6
+          path: src/firmware
+          command: idf.py set-target esp32c6 && idf.py build
+
+      - name: Upload Installable ESP32-C6 Firmware Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xmas-tree-esp32c6-firmware
+          path: |
+            src/firmware/build/xmas_tree_firmware.bin
+            src/firmware/build/bootloader/bootloader.bin
+            src/firmware/build/partition_table/partition-table.bin
+
