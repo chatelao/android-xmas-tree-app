@@ -3,6 +3,7 @@
 #include "../include/ble_manager.h"
 #include "../include/led_engine.h"
 #include "../include/audio_engine.h"
+#include "../include/nvs_manager.h"
 
 #ifdef ESP_PLATFORM
 #include "host/ble_hs.h"
@@ -184,6 +185,7 @@ bool ble_manager_process_lighting_cmd(const uint8_t *buffer, size_t size) {
         .speed = payload.speed
     };
     led_engine_send_command(&led_cmd);
+    nvs_save_current_engine_state();
     return true;
 }
 
@@ -204,5 +206,6 @@ bool ble_manager_process_audio_cmd(const uint8_t *buffer, size_t size) {
         .tempo = payload.tempo
     };
     audio_engine_send_command(&audio_cmd);
+    nvs_save_current_engine_state();
     return true;
 }

@@ -101,7 +101,7 @@ Connect client and firmware subsystems, enabling end-to-end user features.
   * [ ] Update Android `MainViewModel` to reactively reflect current tree status.
 * [ ] **Task 5.2: Preset Management Implementation** ⏳
   * [ ] Implement local Jetpack DataStore persistence on Android for saving multi-parameter themes.
-  * [ ] Implement ESP32-C6 NVS storage to persist active default pattern, volume, and brightness across reboots.
+  * [x] Implement ESP32-C6 NVS storage to persist active default pattern, volume, and brightness across reboots. ✅
 
 ---
 

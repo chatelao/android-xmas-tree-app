@@ -454,6 +454,75 @@ void test_ble_telemetry_notifications(void) {
     printf("  PASSED: BLE Periodic Telemetry Notifications tests\n");
 }
 
+void test_nvs_persistence_across_reboot(void) {
+    printf("Testing NVS persistence and reboot state restoration...\n");
+    nvs_manager_init();
+    assert(nvs_manager_is_initialized() == true);
+
+    // Reset to factory defaults first
+    nvs_reset_defaults();
+    nvs_saved_state_t def = {0};
+    assert(nvs_load_system_state(&def) == true);
+    assert(def.pattern_id == PATTERN_OFF);
+    assert(def.brightness == 80);
+    assert(def.volume == 50);
+
+    // Test clamping of out-of-range values
+    nvs_saved_state_t invalid = {
+        .pattern_id = PATTERN_FESTIVE_CANDLE,
+        .red = 255, .green = 140, .blue = 20,
+        .brightness = 150, // > 100
+        .speed = 0,        // < 1
+        .melody_id = MELODY_WE_WISH_YOU,
+        .volume = 200,     // > 100
+        .tempo = 25        // < 50
+    };
+    assert(nvs_save_system_state(&invalid) == true);
+    nvs_saved_state_t clamped = {0};
+    assert(nvs_load_system_state(&clamped) == true);
+    assert(clamped.brightness == 100);
+    assert(clamped.speed == 1);
+    assert(clamped.volume == 100);
+    assert(clamped.tempo == 50);
+
+    // Process BLE commands (which auto-persist to NVS)
+    ble_manager_init();
+    led_engine_init();
+    audio_engine_init();
+
+    uint8_t led_frame[8] = { CMD_LIGHTING_SET_PATTERN, PATTERN_RAINBOW_WAVE, 10, 20, 30, 65, 75, 0x00 };
+    assert(ble_manager_process_lighting_cmd(led_frame, sizeof(led_frame)) == true);
+
+    uint8_t audio_frame[6] = { CMD_AUDIO_PLAY_SONG, MELODY_JINGLE_BELLS, AUDIO_STATE_PLAY, 88, 115, 0x00 };
+    assert(ble_manager_process_audio_cmd(audio_frame, sizeof(audio_frame)) == true);
+
+    // Simulate reboot by re-initializing engines to default state
+    led_engine_init();
+    audio_engine_init();
+
+    led_engine_cmd_t led_after_reset = {0};
+    led_engine_get_current_state(&led_after_reset);
+    assert(led_after_reset.pattern_id == PATTERN_OFF);
+
+    // Restore from NVS
+    assert(nvs_apply_saved_state_to_engines() == true);
+
+    led_engine_cmd_t restored_led = {0};
+    led_engine_get_current_state(&restored_led);
+    assert(restored_led.pattern_id == PATTERN_RAINBOW_WAVE);
+    assert(restored_led.brightness == 65);
+    assert(restored_led.speed == 75);
+
+    audio_engine_cmd_t restored_audio = {0};
+    audio_engine_get_current_state(&restored_audio);
+    assert(restored_audio.melody_id == MELODY_JINGLE_BELLS);
+    assert(restored_audio.volume == 88);
+    assert(restored_audio.tempo == 115);
+    assert(restored_audio.playback_state == AUDIO_STATE_STOP); // Silent on boot
+
+    printf("  PASSED: NVS persistence and reboot state restoration tests\n");
+}
+
 int main(void) {
     printf("==========================================\n");
     printf("Running Firmware Architecture Unit Tests\n");
@@ -468,6 +537,7 @@ int main(void) {
     test_nvs_manager_stub();
     test_audio_ledc_and_playback_controller();
     test_ble_telemetry_notifications();
+    test_nvs_persistence_across_reboot();
 
     printf("==========================================\n");
     printf("All Firmware Architecture Tests Passed Successfully!\n");
