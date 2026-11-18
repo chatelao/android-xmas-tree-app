@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.xmastree.remote.ble.AndroidBleClient
 import com.xmastree.remote.ble.BleConnectionState
+import com.xmastree.remote.ble.SwitchableBleClient
 import com.xmastree.remote.data.PresetRepository
 import com.xmastree.remote.ui.TreeRemoteViewModel
 import com.xmastree.remote.ui.screens.ControlScreen
@@ -40,7 +41,7 @@ import com.xmastree.remote.ui.screens.ScanScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val bleClient = AndroidBleClient(applicationContext)
+        val bleClient = SwitchableBleClient(AndroidBleClient(applicationContext))
         val presetRepo = PresetRepository(applicationContext)
 
         setContent {
@@ -77,11 +78,12 @@ fun XmasTreeRemoteApp(viewModel: TreeRemoteViewModel) {
                     Column {
                         Text("Xmas Tree Remote", style = MaterialTheme.typography.titleLarge)
                         val telemetry = uiState.telemetry
+                        val modePrefix = if (uiState.isSimulationMode) "[SIM] " else ""
                         val subtitle = when {
                             telemetry != null ->
-                                "Connected • Up ${telemetry.systemUptimeSeconds}s • Bright ${telemetry.currentBrightness}% • Vol ${telemetry.currentVolume}%"
-                            uiState.connectionState == BleConnectionState.CONNECTED -> "Connected"
-                            else -> "BLE: ${uiState.connectionState.name}"
+                                "${modePrefix}Connected • Up ${telemetry.systemUptimeSeconds}s • Bright ${telemetry.currentBrightness}% • Vol ${telemetry.currentVolume}%"
+                            uiState.connectionState == BleConnectionState.CONNECTED -> "${modePrefix}Connected"
+                            else -> "${modePrefix}BLE: ${uiState.connectionState.name}"
                         }
                         Text(subtitle, style = MaterialTheme.typography.labelSmall)
                     }
@@ -118,6 +120,7 @@ fun XmasTreeRemoteApp(viewModel: TreeRemoteViewModel) {
         when (selectedTab) {
             0 -> ScanScreen(
                 uiState = uiState,
+                onToggleSimulationMode = viewModel::setSimulationMode,
                 onStartScan = viewModel::startScan,
                 onStopScan = viewModel::stopScan,
                 onConnect = viewModel::connect,

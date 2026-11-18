@@ -177,4 +177,47 @@ class ProtocolAndViewModelTest {
         assertEquals(4, ble.sentLightingFrames.size)
         assertEquals(2, ble.sentAudioFrames.size)
     }
+
+    @Test
+    fun `simulation mode discovers virtual tree, connects, and updates telemetry`() = runTest {
+        val realClient = FakeBleClient()
+        val simClient = com.xmastree.remote.ble.SimulatedBleClient(scope = backgroundScope)
+        val switchable = com.xmastree.remote.ble.SwitchableBleClient(
+            realClient = realClient,
+            simulatedClient = simClient,
+            scope = backgroundScope
+        )
+        val store = FakePresetStore()
+        val vm = TreeRemoteViewModel(switchable, store)
+
+        vm.setSimulationMode(true)
+        advanceUntilIdle()
+        assertEquals(true, vm.uiState.value.isSimulationMode)
+
+        val discovered = mutableListOf<ScannedDevice>()
+        switchable.scanForDevices().collect { discovered.add(it) }
+        assertEquals(1, discovered.size)
+        assertEquals(com.xmastree.remote.ble.SimulatedBleClient.SIMULATED_DEVICE_ADDRESS, discovered.first().address)
+
+        vm.connect(discovered.first().address)
+        advanceUntilIdle()
+        assertEquals(BleConnectionState.CONNECTED, vm.uiState.value.connectionState)
+
+        vm.selectPattern(PatternId.SPARKLE)
+        vm.setBrightness(77)
+        vm.playAudio()
+        vm.setVolume(65)
+        advanceUntilIdle()
+
+        val telemetry = vm.uiState.value.telemetry
+        assertNotNull(telemetry)
+        assertEquals(PatternId.SPARKLE, telemetry!!.currentPatternId)
+        assertEquals(77, telemetry.currentBrightness)
+        assertEquals(65, telemetry.currentVolume)
+        assertEquals(0, realClient.sentLightingFrames.size)
+
+        vm.disconnect()
+        advanceUntilIdle()
+        assertEquals(BleConnectionState.DISCONNECTED, vm.uiState.value.connectionState)
+    }
 }

@@ -25,6 +25,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +44,7 @@ import com.xmastree.remote.ui.TreeRemoteUiState
 @Composable
 fun ScanScreen(
     uiState: TreeRemoteUiState,
+    onToggleSimulationMode: (Boolean) -> Unit,
     onStartScan: () -> Unit,
     onStopScan: () -> Unit,
     onConnect: (String) -> Unit,
@@ -81,6 +83,11 @@ fun ScanScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        SimulationModeCard(
+            enabled = uiState.isSimulationMode,
+            onToggle = onToggleSimulationMode
+        )
+
         ConnectionStatusCard(
             connectionState = uiState.connectionState,
             connectedAddress = uiState.connectedDeviceAddress,
@@ -94,7 +101,7 @@ fun ScanScreen(
             val isScanning = uiState.connectionState == BleConnectionState.SCANNING
             Button(
                 onClick = {
-                    if (permissionsGranted) {
+                    if (uiState.isSimulationMode || permissionsGranted) {
                         if (isScanning) onStopScan() else onStartScan()
                     } else {
                         permissionLauncher.launch(requiredPermissions)
@@ -106,9 +113,9 @@ fun ScanScreen(
             }
         }
 
-        if (!permissionsGranted) {
+        if (!uiState.isSimulationMode && !permissionsGranted) {
             Text(
-                text = "Bluetooth permissions are required to scan and connect to XmasTree-ESP32C6.",
+                text = "Bluetooth permissions are required to scan and connect to XmasTree-ESP32C6 (or enable Simulation Mode above).",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
             )
@@ -198,6 +205,47 @@ private fun ConnectionStatusCard(
                     Text("Disconnect")
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SimulationModeCard(
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (enabled) {
+                MaterialTheme.colorScheme.tertiaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            }
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(
+                    text = "Simulation Mode",
+                    style = MaterialTheme.typography.titleSmall
+                )
+                Text(
+                    text = "Test all UI screens & telemetry without a physical BLE device",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = onToggle
+            )
         }
     }
 }

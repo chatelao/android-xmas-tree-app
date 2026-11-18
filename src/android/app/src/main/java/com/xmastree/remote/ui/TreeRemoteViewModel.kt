@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.xmastree.remote.ble.BleClient
 import com.xmastree.remote.ble.BleConnectionState
 import com.xmastree.remote.ble.ScannedDevice
+import com.xmastree.remote.ble.SwitchableBleClient
 import com.xmastree.remote.data.PresetStore
 import com.xmastree.remote.data.TreePreset
 import com.xmastree.remote.protocol.AudioCommand
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class TreeRemoteUiState(
+    val isSimulationMode: Boolean = false,
     val connectionState: BleConnectionState = BleConnectionState.DISCONNECTED,
     val connectedDeviceAddress: String? = null,
     val scannedDevices: List<ScannedDevice> = emptyList(),
@@ -56,6 +58,14 @@ class TreeRemoteViewModel(
     private var scanJob: Job? = null
 
     init {
+        if (bleClient is SwitchableBleClient) {
+            bleClient.isSimulationMode
+                .onEach { sim ->
+                    _uiState.update { it.copy(isSimulationMode = sim) }
+                }
+                .launchIn(viewModelScope)
+        }
+
         bleClient.connectionState
             .onEach { state ->
                 _uiState.update {
@@ -102,6 +112,20 @@ class TreeRemoteViewModel(
                 _uiState.update { it.copy(presets = list) }
             }
             .launchIn(viewModelScope)
+    }
+
+    fun setSimulationMode(enabled: Boolean) {
+        stopScan()
+        viewModelScope.launch {
+            (bleClient as? SwitchableBleClient)?.setSimulationMode(enabled)
+            _uiState.update {
+                it.copy(
+                    connectedDeviceAddress = null,
+                    telemetry = null,
+                    statusMessage = if (enabled) "Simulation mode enabled (no BLE required)" else "Bluetooth hardware mode enabled"
+                )
+            }
+        }
     }
 
     fun startScan() {
