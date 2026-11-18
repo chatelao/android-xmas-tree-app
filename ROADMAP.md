@@ -73,15 +73,16 @@ Create modular stubs for both Android and ESP32-C6 to enable parallel developmen
 
 ### Phase 4: Subsystem Implementations
 
-Parallel implementation of client and firmware functionality against established interfaces.
+> **Current Priority (P0): Android Bluetooth App** — All ESP32-C6 firmware subsystems (Tasks 4.2, 4.3, 5.1 telemetry, 5.2 NVS) are implemented. Immediate priority is delivering the Android BLE client, Jetpack Compose UI, and installable APK against [specification/BLUETOOTH_INTERFACE.md](specification/BLUETOOTH_INTERFACE.md).
 
-* [ ] **Task 4.1: Android Application Implementation** ⏳
+* [ ] **Task 4.1: Android Bluetooth Application Implementation (PRIORITY P0)** 🚧
   * [x] Implement binary frame encoder for lighting and audio control commands. ✅
+  * [ ] Set up Android Gradle / Kotlin / Jetpack Compose build configuration (`build.gradle.kts`, `AndroidManifest.xml` with BLE permissions) for APK compilation.
+  * [ ] Implement `android.bluetooth` BLE client (`BleManager` / `AndroidBleClient`) with Kotlin Coroutines, `callbackFlow`, serialized GATT command queue, and CCCD telemetry subscription.
   * [ ] Implement Jetpack Compose UI:
     * [ ] Device Scan Screen & Bluetooth status indicator.
     * [ ] Remote Control Dashboard UI with interactive Color Wheel & Melody Picker.
     * [ ] Preset Manager Screen for saving and recalling themes.
-  * [ ] Implement `android.bluetooth` connection handling with Kotlin Coroutines and `callbackFlow`.
 * [x] **Task 4.2: ESP32-C6 Neopixel Lighting Engine** ✅
   * [x] Implement RMT peripheral driver setup & WS2812B pulse timing descriptor helper on GPIO 8. ✅
   * [x] Implement pattern rendering algorithms (Static Color, Rainbow Wave, Sparkle, Festive Candle, Twinkle). ✅

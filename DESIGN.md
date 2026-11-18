@@ -120,6 +120,8 @@ Below is the system module layout and communications architecture.
 
 ## 4. Technical Interfaces & Protocol Specifications
 
+> For the complete byte-level wire format, CCCD lifecycle, sequence diagrams, and Android/ESP32-C6 implementation requirements, see [specification/BLUETOOTH_INTERFACE.md](specification/BLUETOOTH_INTERFACE.md).
+
 ### 4.1 Bluetooth Low Energy (BLE) GATT Profile
 * **Device Name:** `XmasTree-ESP32C6`
 * **Custom Service UUID:** `12345678-1234-5678-1234-56789abcdef0`

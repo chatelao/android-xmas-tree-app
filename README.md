@@ -12,6 +12,7 @@ The system consists of two primary components:
 
 - [Conceptual Overview & Use Cases (CONCEPT.md)](CONCEPT.md)
 - [Detailed Technical Architecture & Specifications (DESIGN.md)](DESIGN.md)
+- [Bluetooth Low Energy Interface Specification (BLUETOOTH_INTERFACE.md)](specification/BLUETOOTH_INTERFACE.md)
 - [Project Roadmap & Status (ROADMAP.md)](ROADMAP.md)
 - [Top-Level Architecture Diagram (TOP_ARCHITECTURE.puml)](TOP_ARCHITECTURE.puml)
 
