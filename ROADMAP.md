@@ -77,7 +77,7 @@ Create modular stubs for both Android and ESP32-C6 to enable parallel developmen
 
 * [ ] **Task 4.1: Android Bluetooth Application Implementation (PRIORITY P0)** 🚧
   * [x] Implement binary frame encoder for lighting and audio control commands. ✅
-  * [ ] Set up Android Gradle / Kotlin / Jetpack Compose build configuration (`build.gradle.kts`, `AndroidManifest.xml` with BLE permissions) for APK compilation.
+  * [x] Set up Android Gradle / Kotlin / Jetpack Compose build configuration (`build.gradle.kts`, `AndroidManifest.xml` with BLE permissions) for APK compilation. ✅
   * [ ] Implement `android.bluetooth` BLE client (`BleManager` / `AndroidBleClient`) with Kotlin Coroutines, `callbackFlow`, serialized GATT command queue, and CCCD telemetry subscription.
   * [ ] Implement Jetpack Compose UI:
     * [ ] Device Scan Screen & Bluetooth status indicator.
