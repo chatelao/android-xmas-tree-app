@@ -49,11 +49,9 @@ android {
 
     sourceSets {
         getByName("main") {
-            java {
-                // Kotlin implementations in GattProfile.kt and ProtocolSpec.kt are authoritative for Gradle builds;
-                // the .java equivalents are retained for standalone javac protocol tests.
-                exclude("com/xmastree/remote/protocol/*.java")
-            }
+            // Kotlin implementations in GattProfile.kt and ProtocolSpec.kt are authoritative for Gradle builds;
+            // the .java equivalents are retained for standalone javac protocol tests.
+            java.filter.exclude("com/xmastree/remote/protocol/*.java")
         }
     }
 
