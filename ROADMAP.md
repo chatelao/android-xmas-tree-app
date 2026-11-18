@@ -7,7 +7,7 @@
 | **Phase 1** | Repository Infrastructure & Toolchain Setup | ✅ |
 | **Phase 2** | Technical Interfaces & Binary Protocol Specifications | ✅ |
 | **Phase 3** | Core Architecture Stubs & Interface Definitions | ✅ |
-| **Phase 4** | Subsystem Implementations (Android App & ESP32-C6 Firmware) | ⏳ |
+| **Phase 4** | Subsystem Implementations (Android App & ESP32-C6 Firmware) | 🚧 |
 | **Phase 5** | Integration, Preset Management & System Telemetry | ⏳ |
 | **Phase 6** | System Verification, Automated Testing & CI/CD Pipeline | ⏳ |
 
@@ -82,12 +82,12 @@ Parallel implementation of client and firmware functionality against established
     * [ ] Remote Control Dashboard UI with interactive Color Wheel & Melody Picker.
     * [ ] Preset Manager Screen for saving and recalling themes.
   * [ ] Implement `android.bluetooth` connection handling with Kotlin Coroutines and `callbackFlow`.
-* [ ] **Task 4.2: ESP32-C6 Neopixel Lighting Engine** ⏳
+* [x] **Task 4.2: ESP32-C6 Neopixel Lighting Engine** ✅
   * [x] Implement RMT peripheral driver setup & WS2812B pulse timing descriptor helper on GPIO 8. ✅
   * [x] Implement pattern rendering algorithms (Static Color, Rainbow Wave, Sparkle, Festive Candle, Twinkle). ✅
-* [ ] **Task 4.3: ESP32-C6 Audio / Melody Engine** ⏳
+* [x] **Task 4.3: ESP32-C6 Audio / Melody Engine** ✅
   * [x] Implement RTTTL festive melody score definitions and note frequency converter (Jingle Bells, We Wish You a Merry Christmas, Silent Night, Deck the Halls). ✅
-  * [ ] Implement LEDC PWM peripheral driver on GPIO 19 and tone playback task controller.
+  * [x] Implement LEDC PWM peripheral driver on GPIO 19 and tone playback task controller. ✅
 
 ---
 

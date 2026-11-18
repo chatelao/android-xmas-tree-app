@@ -256,6 +256,121 @@ void test_nvs_manager_stub(void) {
     printf("  PASSED: NVS Manager stub tests\n");
 }
 
+void test_audio_ledc_and_playback_controller(void) {
+    printf("Testing Audio Engine LEDC PWM driver and playback controller...\n");
+    audio_engine_init();
+
+    // Verify LEDC configuration on GPIO 19, Timer 0, Channel 0, 10-bit resolution
+    audio_ledc_config_t ledc = audio_engine_get_ledc_config();
+    assert(ledc.is_initialized == true);
+    assert(ledc.gpio_pin == SPEAKER_LEDC_GPIO_PIN);
+    assert(ledc.gpio_pin == 19);
+    assert(ledc.timer_num == 0);
+    assert(ledc.channel_num == 0);
+    assert(ledc.duty_resolution_bits == 10);
+    assert(ledc.current_freq_hz == 0);
+    assert(ledc.current_duty == 0);
+
+    // Verify duty cycle calculation (10-bit: 50% max duty = 512)
+    assert(audio_engine_calc_duty(0, 10) == 0);
+    assert(audio_engine_calc_duty(50, 10) == 256);
+    assert(audio_engine_calc_duty(100, 10) == 512);
+    assert(audio_engine_calc_duty(150, 10) == 512); // Clamped to 100%
+
+    // Verify direct LEDC tone setting & stopping
+    assert(audio_engine_ledc_set_tone(440, 50) == true);
+    ledc = audio_engine_get_ledc_config();
+    assert(ledc.current_freq_hz == 440);
+    assert(ledc.current_duty == 256);
+
+    audio_engine_ledc_stop();
+    ledc = audio_engine_get_ledc_config();
+    assert(ledc.current_freq_hz == 0);
+    assert(ledc.current_duty == 0);
+
+    // Verify RTTTL note sequence parser (Jingle Bells: "8g,8e,8d,c,2g,...")
+    const char *notes = "8g,8e,4.f#6,p";
+    audio_note_event_t ev = {0};
+    assert(audio_engine_parse_next_note(&notes, 4, 5, 120, 100, &ev) == true);
+    assert(ev.freq_hz == audio_engine_note_to_freq('g', false, 5));
+    assert(ev.duration_ms == 250); // 120 bpm -> quarter=500ms, eighth=250ms
+
+    assert(audio_engine_parse_next_note(&notes, 4, 5, 120, 100, &ev) == true);
+    assert(ev.freq_hz == audio_engine_note_to_freq('e', false, 5));
+    assert(ev.duration_ms == 250);
+
+    assert(audio_engine_parse_next_note(&notes, 4, 5, 120, 100, &ev) == true);
+    assert(ev.freq_hz == audio_engine_note_to_freq('f', true, 6));
+    assert(ev.duration_ms == 750); // dotted quarter at 120 bpm = 500 + 250 = 750ms
+
+    assert(audio_engine_parse_next_note(&notes, 4, 5, 120, 200, &ev) == true);
+    assert(ev.freq_hz == 0); // Rest
+    assert(ev.duration_ms == 250); // quarter at 200% tempo = 500 * 100 / 200 = 250ms
+
+    assert(audio_engine_parse_next_note(&notes, 4, 5, 120, 100, &ev) == false); // End of string
+
+    // Verify playback controller Play -> Pause -> Resume -> Stop
+    audio_engine_cmd_t play_cmd = {
+        .melody_id = MELODY_JINGLE_BELLS,
+        .playback_state = AUDIO_STATE_PLAY,
+        .volume = 100,
+        .tempo = 100
+    };
+    assert(audio_engine_send_command(&play_cmd) == true);
+
+    // Step 1: First note of Jingle Bells is 8g (octave 5 = 784 Hz)
+    assert(audio_engine_playback_step() == true);
+    audio_playback_state_t pb = {0};
+    audio_engine_get_playback_state(&pb);
+    assert(pb.is_playing == true);
+    assert(pb.is_paused == false);
+    assert(pb.active_melody == MELODY_JINGLE_BELLS);
+    assert(pb.current_freq_hz == 784);
+    assert(pb.current_note_duration_ms > 0);
+    ledc = audio_engine_get_ledc_config();
+    assert(ledc.current_freq_hz == 784);
+    assert(ledc.current_duty == 512);
+
+    // Step 2: Second note is 8e (octave 5 = 660 Hz)
+    assert(audio_engine_playback_step() == true);
+    audio_engine_get_playback_state(&pb);
+    assert(pb.current_freq_hz == 660);
+
+    // Pause playback
+    play_cmd.playback_state = AUDIO_STATE_PAUSE;
+    assert(audio_engine_send_command(&play_cmd) == true);
+    assert(audio_engine_playback_step() == true);
+    audio_engine_get_playback_state(&pb);
+    assert(pb.is_playing == false);
+    assert(pb.is_paused == true);
+    assert(pb.current_freq_hz == 0);
+    ledc = audio_engine_get_ledc_config();
+    assert(ledc.current_duty == 0);
+
+    // Resume playback -> third note is 8d (octave 5 = 588 Hz)
+    play_cmd.playback_state = AUDIO_STATE_PLAY;
+    assert(audio_engine_send_command(&play_cmd) == true);
+    assert(audio_engine_playback_step() == true);
+    audio_engine_get_playback_state(&pb);
+    assert(pb.is_playing == true);
+    assert(pb.is_paused == false);
+    assert(pb.current_freq_hz == 588);
+
+    // Stop playback
+    play_cmd.playback_state = AUDIO_STATE_STOP;
+    assert(audio_engine_send_command(&play_cmd) == true);
+    assert(audio_engine_playback_step() == false);
+    audio_engine_get_playback_state(&pb);
+    assert(pb.is_playing == false);
+    assert(pb.is_paused == false);
+    assert(pb.active_melody == MELODY_SILENT);
+    ledc = audio_engine_get_ledc_config();
+    assert(ledc.current_freq_hz == 0);
+    assert(ledc.current_duty == 0);
+
+    printf("  PASSED: Audio Engine LEDC PWM driver and playback controller tests\n");
+}
+
 int main(void) {
     printf("==========================================\n");
     printf("Running Firmware Architecture Unit Tests\n");
@@ -268,6 +383,7 @@ int main(void) {
     test_led_engine_rendering_and_rmt();
     test_audio_engine_stub();
     test_nvs_manager_stub();
+    test_audio_ledc_and_playback_controller();
 
     printf("==========================================\n");
     printf("All Firmware Architecture Tests Passed Successfully!\n");
