@@ -53,18 +53,18 @@ Written to `CHARACTERISTIC_LIGHTING_UUID` (`...abcdef1`).
 | Offset | Field | Type | Valid Values / Range | Description |
 | :---: | :--- | :---: | :--- | :--- |
 | `0` | `command_id` | `uint8` | `0x01`, `0x02`, `0x03` | `0x01`: Set Pattern<br>`0x02`: Set Static Color<br>`0x03`: Set Brightness |
-| `1` | `pattern_id` | `uint8` | `0` – `5` | `0`: Off<br>`1`: Static Color<br>`2`: Rainbow Wave<br>`3`: Sparkle<br>`4`: Festive Candle<br>`5`: Twinkle |
+| `1` | `pattern_id` | `uint8` | `0` – `12` | `0`: Off<br>`1`: Static Color<br>`2`: Rainbow Wave<br>`3`: Sparkle<br>`4`: Festive Candle<br>`5`: Twinkle<br>`6`: Lauflicht (Comet Chase)<br>`7`: Tree Segments<br>`8`: Radial Shockwave<br>`9`: 2D Interference Plasma<br>`10`: Polar Vortex<br>`11`: Gravity Pulse<br>`12`: TwinkleFOX (10 Palettes) |
 | `2` | `red` | `uint8` | `0` – `255` | Primary Red intensity |
 | `3` | `green` | `uint8` | `0` – `255` | Primary Green intensity |
 | `4` | `blue` | `uint8` | `0` – `255` | Primary Blue intensity |
 | `5` | `brightness` | `uint8` | `0` – `100` | Global brightness percentage (`0%` – `100%`) |
 | `6` | `speed` | `uint8` | `1` – `100` | Animation speed (`1` = slowest, `100` = fastest) |
-| `7` | `reserved` | `uint8` | `0x00` | Reserved alignment byte |
+| `7` | `palette_id` | `uint8` | `0` – `9` | Sub-mode / Palette selector (`0..9`: TwinkleFOX palettes, `0..3`: Shockwave epicenter, `0..6`: Segment mode; `0` default) |
 
 #### Validation Rules (Firmware & Client)
 - Exact frame length must be `8` bytes (`LIGHTING_PAYLOAD_SIZE`).
 - `command_id` must be in `{0x01, 0x02, 0x03}`.
-- `pattern_id` must be in `{0..5}`.
+- `pattern_id` must be in `{0..12}`.
 - `brightness <= 100` and `1 <= speed <= 100`.
 - On valid write, firmware updates `led_engine`, persists state to NVS (`"xmas_tree"` namespace), and returns `PROTOCOL_OK`.
 

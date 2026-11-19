@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.xmastree.remote.protocol.MelodyId
 import com.xmastree.remote.protocol.PatternId
 import com.xmastree.remote.protocol.PlaybackState
+import com.xmastree.remote.protocol.TwinklePalette
 import com.xmastree.remote.ui.TreeRemoteUiState
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -54,6 +55,7 @@ import kotlin.math.roundToInt
 fun ControlScreen(
     uiState: TreeRemoteUiState,
     onSelectPattern: (PatternId) -> Unit,
+    onSelectPalette: (Int) -> Unit = {},
     onColorSelected: (Int, Int, Int) -> Unit,
     onBrightnessChange: (Int) -> Unit,
     onSpeedChange: (Int) -> Unit,
@@ -90,6 +92,60 @@ fun ControlScreen(
                             onClick = { onSelectPattern(pattern) },
                             label = { Text(formatPatternName(pattern)) }
                         )
+                    }
+                }
+
+                if (uiState.patternId == PatternId.TWINKLE_FOX) {
+                    Text("TwinkleFOX Palette", style = MaterialTheme.typography.titleSmall)
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        TwinklePalette.values().forEach { pal ->
+                            FilterChip(
+                                selected = uiState.paletteId == pal.id,
+                                onClick = { onSelectPalette(pal.id) },
+                                leadingIcon = {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(12.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(pal.previewRgb))
+                                    )
+                                },
+                                label = { Text(pal.displayName) }
+                            )
+                        }
+                    }
+                } else if (uiState.patternId == PatternId.RADIAL_WAVE) {
+                    Text("Shockwave Epicenter", style = MaterialTheme.typography.titleSmall)
+                    val epicenters = listOf("Star", "Stem", "Tree Center", "Base")
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        epicenters.forEachIndexed { idx, label ->
+                            FilterChip(
+                                selected = (uiState.paletteId % 4) == idx,
+                                onClick = { onSelectPalette(idx) },
+                                label = { Text(label) }
+                            )
+                        }
+                    }
+                } else if (uiState.patternId == PatternId.SEGMENTS) {
+                    Text("Tree Segment", style = MaterialTheme.typography.titleSmall)
+                    val segments = listOf("Auto Cycle", "Lower Bough", "Middle Bough", "Upper Bough", "Stem", "Star Inner", "Star Outer")
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        segments.forEachIndexed { idx, label ->
+                            FilterChip(
+                                selected = uiState.paletteId == idx,
+                                onClick = { onSelectPalette(idx) },
+                                label = { Text(label) }
+                            )
+                        }
                     }
                 }
 
@@ -295,6 +351,13 @@ fun formatPatternName(pattern: PatternId): String = when (pattern) {
     PatternId.SPARKLE -> "Sparkle"
     PatternId.FESTIVE_CANDLE -> "Candle"
     PatternId.TWINKLE -> "Twinkle"
+    PatternId.COMET_CHASE -> "Lauflicht"
+    PatternId.SEGMENTS -> "Segments"
+    PatternId.RADIAL_WAVE -> "Shockwave"
+    PatternId.PLASMA -> "Plasma"
+    PatternId.POLAR_VORTEX -> "Polar Vortex"
+    PatternId.GRAVITY_PULSE -> "Gravity Pulse"
+    PatternId.TWINKLE_FOX -> "TwinkleFOX"
 }
 
 fun formatMelodyName(melody: MelodyId): String = when (melody) {

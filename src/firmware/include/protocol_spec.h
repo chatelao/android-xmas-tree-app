@@ -27,8 +27,17 @@ typedef enum {
     PATTERN_RAINBOW_WAVE   = 2,
     PATTERN_SPARKLE        = 3,
     PATTERN_FESTIVE_CANDLE = 4,
-    PATTERN_TWINKLE        = 5
+    PATTERN_TWINKLE        = 5,
+    PATTERN_COMET_CHASE    = 6,
+    PATTERN_SEGMENTS       = 7,
+    PATTERN_RADIAL_WAVE    = 8,
+    PATTERN_PLASMA         = 9,
+    PATTERN_POLAR_VORTEX   = 10,
+    PATTERN_GRAVITY_PULSE  = 11,
+    PATTERN_TWINKLE_FOX    = 12
 } pattern_id_t;
+
+#define TWINKLE_PALETTE_COUNT 10
 
 // Opcodes for Audio Control
 typedef enum {
@@ -72,7 +81,10 @@ typedef struct {
     uint8_t blue;
     uint8_t brightness;
     uint8_t speed;
-    uint8_t reserved;
+    union {
+        uint8_t palette_id;
+        uint8_t reserved;
+    };
 } lighting_control_payload_t;
 
 typedef struct {

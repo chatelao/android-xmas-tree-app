@@ -67,7 +67,7 @@ jobs:
       - name: Run Firmware Unit Tests
         run: |
           mkdir -p build
-          gcc -Wall -Wextra -Werror -Isrc/firmware/include src/firmware/src/*.c test/firmware/test_architecture.c -o build/test_architecture
+          gcc -Wall -Wextra -Werror -Isrc/firmware/include src/firmware/src/*.c test/firmware/test_architecture.c -lm -o build/test_architecture
           ./build/test_architecture
           gcc -Wall -Wextra -Werror -Isrc/firmware/include src/firmware/src/protocol_spec.c test/firmware/test_protocol.c -o build/test_protocol
           ./build/test_protocol

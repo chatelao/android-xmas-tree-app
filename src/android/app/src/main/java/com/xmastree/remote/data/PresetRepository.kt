@@ -27,7 +27,8 @@ data class TreePreset(
     val speed: Int,
     val melodyId: MelodyId,
     val volume: Int,
-    val tempo: Int
+    val tempo: Int,
+    val paletteId: Int = 0
 )
 
 interface PresetStore {
@@ -111,6 +112,7 @@ class PresetRepository(private val context: Context) : PresetStore {
                     put("melodyId", p.melodyId.id.toInt() and 0xFF)
                     put("volume", p.volume)
                     put("tempo", p.tempo)
+                    put("paletteId", p.paletteId)
                 }
                 array.put(obj)
             }
@@ -137,7 +139,8 @@ class PresetRepository(private val context: Context) : PresetStore {
                                 speed = obj.optInt("speed", 50).coerceIn(1, 100),
                                 melodyId = melody,
                                 volume = obj.optInt("volume", 50).coerceIn(0, 100),
-                                tempo = obj.optInt("tempo", 100).coerceIn(50, 200)
+                                tempo = obj.optInt("tempo", 100).coerceIn(50, 200),
+                                paletteId = obj.optInt("paletteId", 0).coerceIn(0, 9)
                             )
                         )
                     }

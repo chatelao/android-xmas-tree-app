@@ -19,10 +19,34 @@ enum class PatternId(val id: Byte) {
     RAINBOW_WAVE(2.toByte()),
     SPARKLE(3.toByte()),
     FESTIVE_CANDLE(4.toByte()),
-    TWINKLE(5.toByte());
+    TWINKLE(5.toByte()),
+    COMET_CHASE(6.toByte()),
+    SEGMENTS(7.toByte()),
+    RADIAL_WAVE(8.toByte()),
+    PLASMA(9.toByte()),
+    POLAR_VORTEX(10.toByte()),
+    GRAVITY_PULSE(11.toByte()),
+    TWINKLE_FOX(12.toByte());
 
     companion object {
         fun fromByte(b: Byte): PatternId? = values().firstOrNull { it.id == b }
+    }
+}
+
+enum class TwinklePalette(val id: Int, val displayName: String, val previewRgb: Int) {
+    RETRO_C9(0, "Retro C9", 0xFFB80400.toInt()),
+    HOLLY(1, "Holly", 0xFF00580C.toInt()),
+    FAIRY_LIGHT(2, "Fairy Light", 0xFFFF9D2A.toInt()),
+    RED_GREEN_WHITE(3, "Red-Green-White", 0xFFFF0000.toInt()),
+    CANDY_CANE(4, "Candy Cane", 0xFFFFFFFF.toInt()),
+    GLITTER_SNOW(5, "Glitter Snow", 0xFFE0F0FF.toInt()),
+    ICE_CRYSTAL(6, "Ice Crystal", 0xFF1880FF.toInt()),
+    BLUE_WINTER(7, "Blue Winter", 0xFF0000FF.toInt()),
+    RAINBOW(8, "Rainbow", 0xFFFF8000.toInt()),
+    MAGENTA_GREEN(9, "Magenta-Green", 0xFFFF00C8.toInt());
+
+    companion object {
+        fun fromId(id: Int): TwinklePalette = values().firstOrNull { it.id == id } ?: RETRO_C9
     }
 }
 

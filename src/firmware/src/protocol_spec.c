@@ -15,7 +15,7 @@ protocol_status_t parse_lighting_control_frame(const uint8_t *buffer, size_t siz
     if (temp.command_id < CMD_LIGHTING_SET_PATTERN || temp.command_id > CMD_LIGHTING_SET_BRIGHTNESS) {
         return PROTOCOL_ERROR_INVALID_CMD;
     }
-    if (temp.pattern_id > PATTERN_TWINKLE) {
+    if (temp.pattern_id > PATTERN_TWINKLE_FOX) {
         return PROTOCOL_ERROR_INVALID_PARAM;
     }
     if (temp.brightness > 100) {

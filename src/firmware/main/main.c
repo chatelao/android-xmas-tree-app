@@ -21,7 +21,8 @@ static void on_lighting_command(const lighting_control_payload_t *payload) {
         .green = payload->green,
         .blue = payload->blue,
         .brightness = payload->brightness,
-        .speed = payload->speed
+        .speed = payload->speed,
+        .palette_id = payload->palette_id
     };
     led_engine_send_command(&cmd);
 }

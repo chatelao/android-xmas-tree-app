@@ -40,12 +40,15 @@ async function run() {
     await page.screenshot({ path: path.join(screenshotDir, "02_scan_simulation_connected.png") });
     console.log("  PASSED: Step 2 - Simulation Mode Scan & Connect captured");
 
-    // Step 3: Control Screen (Pattern, Swatch, Brightness, Melody, Play)
+    // Step 3: Control Screen (Pattern, TwinkleFOX Palette, Swatch, Brightness, Melody, Play)
     await page.click("#nav-control");
-    await page.click("#pattern-chips button:has-text('Sparkle')");
+    await page.click("#pattern-chips button:has-text('TwinkleFOX')");
+    await page.click("#palette-chips button:has-text('Holly')");
     await page.click(".swatch[data-rgb='0,200,50']");
     await page.fill("#slider-brightness", "85");
     await page.dispatchEvent("#slider-brightness", "input");
+    const ledWireText = await page.textContent("#wire-frame");
+    assert.match(ledWireText, /Last Frame \(LED\): 03 0C 00 C8 32 55 32 01/);
     await page.click("#melody-chips button:has-text('Jingle Bells')");
     await page.click("#btn-play");
     const wireText = await page.textContent("#wire-frame");

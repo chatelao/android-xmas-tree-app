@@ -182,7 +182,8 @@ bool ble_manager_process_lighting_cmd(const uint8_t *buffer, size_t size) {
         .green = payload.green,
         .blue = payload.blue,
         .brightness = payload.brightness,
-        .speed = payload.speed
+        .speed = payload.speed,
+        .palette_id = payload.palette_id
     };
     led_engine_send_command(&led_cmd);
     nvs_save_current_engine_state();

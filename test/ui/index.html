@@ -82,6 +82,10 @@
       <div class="card">
         <strong>Lighting Pattern</strong>
         <div id="pattern-chips" class="chips"></div>
+        <div id="palette-section" class="hidden" style="margin-top:8px;">
+          <strong style="font-size:13px;">TwinkleFOX Palette</strong>
+          <div id="palette-chips" class="chips"></div>
+        </div>
         <div class="row">
           <canvas id="color-wheel" width="140" height="140" style="border-radius:50%; border:1px solid #ccc;"></canvas>
           <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
@@ -136,12 +140,14 @@
   </nav>
 
   <script>
-    const PATTERNS = ["Off", "Static", "Rainbow", "Sparkle", "Candle", "Twinkle"];
+    const PATTERNS = ["Off", "Static", "Rainbow", "Sparkle", "Candle", "Twinkle", "Lauflicht", "Segments", "Shockwave", "Plasma", "Polar Vortex", "Gravity Pulse", "TwinkleFOX"];
+    const TWINKLE_PALETTES = ["Retro C9", "Holly", "Fairy Light", "Red-Green-White", "Candy Cane", "Glitter Snow", "Ice Crystal", "Blue Winter", "Rainbow", "Magenta-Green"];
     const MELODIES = ["Silent", "Jingle Bells", "We Wish You", "Silent Night", "Deck the Halls"];
     const state = {
       sim: false,
       connected: false,
       patternIdx: 2,
+      paletteIdx: 0,
       rgb: [255, 50, 50],
       brightness: 80,
       speed: 50,
@@ -178,6 +184,19 @@
         b.onclick = () => { state.patternIdx = idx; sendLightingFrame(0x01); renderChips(); };
         pWrap.appendChild(b);
       });
+      const palSection = document.getElementById("palette-section");
+      const palWrap = document.getElementById("palette-chips");
+      palSection.classList.toggle("hidden", state.patternIdx !== 12);
+      palWrap.innerHTML = "";
+      if (state.patternIdx === 12) {
+        TWINKLE_PALETTES.forEach((name, idx) => {
+          const b = document.createElement("button");
+          b.className = "chip" + (state.paletteIdx === idx ? " selected" : "");
+          b.textContent = name;
+          b.onclick = () => { state.paletteIdx = idx; sendLightingFrame(0x01); renderChips(); };
+          palWrap.appendChild(b);
+        });
+      }
       const mWrap = document.getElementById("melody-chips");
       mWrap.innerHTML = "";
       MELODIES.forEach((name, idx) => {
@@ -190,7 +209,7 @@
     }
 
     function sendLightingFrame(cmd) {
-      const bytes = [cmd, state.patternIdx, state.rgb[0], state.rgb[1], state.rgb[2], state.brightness, state.speed, 0x00];
+      const bytes = [cmd, state.patternIdx, state.rgb[0], state.rgb[1], state.rgb[2], state.brightness, state.speed, state.paletteIdx];
       document.getElementById("wire-frame").textContent = "Last Frame (LED): " + bytes.map(hex).join(" ");
       updateHeader();
     }

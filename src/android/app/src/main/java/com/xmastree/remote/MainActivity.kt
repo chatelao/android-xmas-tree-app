@@ -130,6 +130,7 @@ fun XmasTreeRemoteApp(viewModel: TreeRemoteViewModel) {
             1 -> ControlScreen(
                 uiState = uiState,
                 onSelectPattern = viewModel::selectPattern,
+                onSelectPalette = viewModel::selectPalette,
                 onColorSelected = viewModel::setColor,
                 onBrightnessChange = viewModel::setBrightness,
                 onSpeedChange = viewModel::setSpeed,

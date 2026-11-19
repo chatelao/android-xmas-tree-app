@@ -38,6 +38,7 @@ data class TreeRemoteUiState(
     val blue: Int = 50,
     val brightness: Int = 80,
     val speed: Int = 50,
+    val paletteId: Int = 0,
     val melodyId: MelodyId = MelodyId.JINGLE_BELLS,
     val playbackState: PlaybackState = PlaybackState.STOP,
     val volume: Int = 70,
@@ -171,6 +172,11 @@ class TreeRemoteViewModel(
         dispatchLighting(LightingCommand.SET_PATTERN)
     }
 
+    fun selectPalette(paletteId: Int) {
+        _uiState.update { it.copy(paletteId = paletteId.coerceIn(0, 9)) }
+        dispatchLighting(LightingCommand.SET_PATTERN)
+    }
+
     fun setColor(red: Int, green: Int, blue: Int) {
         _uiState.update {
             it.copy(
@@ -240,7 +246,8 @@ class TreeRemoteViewModel(
             speed = s.speed,
             melodyId = s.melodyId,
             volume = s.volume,
-            tempo = s.tempo
+            tempo = s.tempo,
+            paletteId = s.paletteId
         )
         viewModelScope.launch {
             presetStore.savePreset(preset)
@@ -257,6 +264,7 @@ class TreeRemoteViewModel(
                 blue = preset.blue,
                 brightness = preset.brightness,
                 speed = preset.speed,
+                paletteId = preset.paletteId,
                 melodyId = preset.melodyId,
                 playbackState = if (preset.melodyId == MelodyId.SILENT) PlaybackState.STOP else PlaybackState.PLAY,
                 volume = preset.volume,
@@ -289,7 +297,8 @@ class TreeRemoteViewModel(
             green = s.green,
             blue = s.blue,
             brightness = s.brightness,
-            speed = s.speed
+            speed = s.speed,
+            reserved = s.paletteId
         )
         viewModelScope.launch {
             bleClient.sendLightingCommand(frame)

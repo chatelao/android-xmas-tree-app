@@ -523,6 +523,72 @@ void test_nvs_persistence_across_reboot(void) {
     printf("  PASSED: NVS persistence and reboot state restoration tests\n");
 }
 
+void test_aity_xmas_2026_animations(void) {
+    printf("Testing aity-xmas-2026 60-LED animations and TwinkleFOX palettes...\n");
+    assert(LED_STRIP_NUM_LEDS == 60);
+
+    rgb_color_t pixels[LED_STRIP_NUM_LEDS];
+    pattern_id_t patterns[] = {
+        PATTERN_COMET_CHASE,
+        PATTERN_SEGMENTS,
+        PATTERN_RADIAL_WAVE,
+        PATTERN_PLASMA,
+        PATTERN_POLAR_VORTEX,
+        PATTERN_GRAVITY_PULSE,
+        PATTERN_TWINKLE_FOX
+    };
+
+    for (size_t p = 0; p < sizeof(patterns) / sizeof(patterns[0]); p++) {
+        led_engine_cmd_t cmd = {
+            .pattern_id = patterns[p],
+            .red = 0,
+            .green = 220,
+            .blue = 255,
+            .brightness = 100,
+            .speed = 60,
+            .palette_id = 1 // Holly / Stem / Lower Bough
+        };
+        memset(pixels, 0, sizeof(pixels));
+        assert(led_engine_render_frame(&cmd, 5, pixels, LED_STRIP_NUM_LEDS) == true);
+
+        int lit = 0;
+        for (int i = 0; i < LED_STRIP_NUM_LEDS; i++) {
+            if (pixels[i].r > 0 || pixels[i].g > 0 || pixels[i].b > 0) {
+                lit++;
+            }
+        }
+        assert(lit > 0);
+    }
+
+    // Verify TwinkleFOX palette_id=1 (Holly) differs from palette_id=6 (Ice Crystal)
+    rgb_color_t holly_px[LED_STRIP_NUM_LEDS];
+    rgb_color_t ice_px[LED_STRIP_NUM_LEDS];
+    led_engine_cmd_t tf_cmd = {
+        .pattern_id = PATTERN_TWINKLE_FOX,
+        .brightness = 100,
+        .speed = 50,
+        .palette_id = 1
+    };
+    assert(led_engine_render_frame(&tf_cmd, 100, holly_px, LED_STRIP_NUM_LEDS) == true);
+    tf_cmd.palette_id = 6;
+    assert(led_engine_render_frame(&tf_cmd, 100, ice_px, LED_STRIP_NUM_LEDS) == true);
+    assert(memcmp(holly_px, ice_px, sizeof(holly_px)) != 0);
+
+    // Verify BLE lighting command with PATTERN_TWINKLE_FOX and palette_id=1
+    ble_manager_init();
+    led_engine_init();
+    uint8_t frame[LIGHTING_PAYLOAD_SIZE] = {
+        CMD_LIGHTING_SET_PATTERN, PATTERN_TWINKLE_FOX, 0, 0, 0, 90, 55, 1
+    };
+    assert(ble_manager_process_lighting_cmd(frame, sizeof(frame)) == true);
+    led_engine_cmd_t active = {0};
+    led_engine_get_current_state(&active);
+    assert(active.pattern_id == PATTERN_TWINKLE_FOX);
+    assert(active.palette_id == 1);
+
+    printf("  PASSED: aity-xmas-2026 60-LED animations and TwinkleFOX palettes tests\n");
+}
+
 int main(void) {
     printf("==========================================\n");
     printf("Running Firmware Architecture Unit Tests\n");
@@ -538,6 +604,7 @@ int main(void) {
     test_audio_ledc_and_playback_controller();
     test_ble_telemetry_notifications();
     test_nvs_persistence_across_reboot();
+    test_aity_xmas_2026_animations();
 
     printf("==========================================\n");
     printf("All Firmware Architecture Tests Passed Successfully!\n");

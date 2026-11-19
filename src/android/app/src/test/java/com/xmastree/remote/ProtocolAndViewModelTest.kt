@@ -223,4 +223,23 @@ class ProtocolAndViewModelTest {
         runCurrent()
         assertEquals(BleConnectionState.DISCONNECTED, vm.uiState.value.connectionState)
     }
+
+    @Test
+    fun `aity-xmas-2026 animations and TwinkleFOX palette encode into lighting frame byte 7`() = runTest(testDispatcher) {
+        val ble = FakeBleClient()
+        val store = FakePresetStore()
+        val vm = TreeRemoteViewModel(ble, store)
+
+        vm.selectPattern(PatternId.TWINKLE_FOX)
+        vm.selectPalette(TwinklePalette.HOLLY.id)
+        advanceUntilIdle()
+
+        assertEquals(PatternId.TWINKLE_FOX, vm.uiState.value.patternId)
+        assertEquals(TwinklePalette.HOLLY.id, vm.uiState.value.paletteId)
+        val lastFrame = ble.sentLightingFrames.last()
+        assertEquals(PatternId.TWINKLE_FOX, lastFrame.patternId)
+        assertEquals(TwinklePalette.HOLLY.id, lastFrame.reserved)
+        assertEquals(0x0C.toByte(), lastFrame.toByteArray()[1])
+        assertEquals(0x01.toByte(), lastFrame.toByteArray()[7])
+    }
 }

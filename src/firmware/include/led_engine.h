@@ -6,7 +6,7 @@
 #include "protocol_spec.h"
 
 #define LED_STRIP_GPIO_PIN 8
-#define LED_STRIP_NUM_LEDS 30
+#define LED_STRIP_NUM_LEDS 60
 
 typedef struct {
     pattern_id_t pattern_id;
@@ -15,6 +15,7 @@ typedef struct {
     uint8_t blue;
     uint8_t brightness;
     uint8_t speed;
+    uint8_t palette_id;
 } led_engine_cmd_t;
 
 typedef struct {
