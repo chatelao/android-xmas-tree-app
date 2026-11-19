@@ -14,6 +14,7 @@ import com.xmastree.remote.protocol.MelodyId
 import com.xmastree.remote.protocol.PatternId
 import com.xmastree.remote.protocol.PlaybackState
 import com.xmastree.remote.protocol.TelemetryFrame
+import com.xmastree.remote.protocol.TwinklePalette
 import com.xmastree.remote.ui.TreeRemoteViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
