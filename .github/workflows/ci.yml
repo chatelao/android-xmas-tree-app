@@ -136,3 +136,18 @@ jobs:
             src/firmware/build/bootloader/bootloader.bin
             src/firmware/build/partition_table/partition-table.bin
 
+      - name: Attach ESP32-C6 Firmware to GitHub Release on Tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME="${GITHUB_REF_NAME}"
+          FW_ZIP="xmas-tree-esp32c6-firmware-${TAG_NAME}.zip"
+          zip -j "${FW_ZIP}" \
+            src/firmware/build/xmas_tree_firmware.bin \
+            src/firmware/build/bootloader/bootloader.bin \
+            src/firmware/build/partition_table/partition-table.bin
+          cp src/firmware/build/xmas_tree_firmware.bin "xmas_tree_firmware-${TAG_NAME}.bin"
+          gh release upload "${TAG_NAME}" "${FW_ZIP}" "xmas_tree_firmware-${TAG_NAME}.bin" --clobber
+
+
